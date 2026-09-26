@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seek It — Investiguer un numéro</title>
+<meta name="description" content="Seek It — recherche approfondie sur un numéro de téléphone : opérateur, statut, localisation, entités liées.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:#060607;color:#e8e8ec;
+    font-family:'Inter',-apple-system,sans-serif;
+    min-height:100vh;
+    overflow:hidden;
+    position:relative;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* === HALO DE FOND === */
+  body::before{
+    content:'';position:fixed;top:-320px;left:50%;
+    transform:translateX(-50%);
+    width:150%;max-width:1400px;height:900px;
+    background:radial-gradient(ellipse at center,
+      rgba(255,55,55,0.20) 0%,
+      rgba(255,30,30,0.07) 35%,
+      transparent 65%);
+    pointer-events:none;z-index:0;filter:blur(40px);
+  }
+
+  /* === DÉCOR DE FOND === */
+  .scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;perspective:1200px}
+  .grid-floor{
+    position:absolute;bottom:-10%;left:50%;width:200%;height:60%;
+    transform:translateX(-50%) perspective(500px) rotateX(65deg);
+    transform-origin:center bottom;
+    background-image:
+      linear-gradient(rgba(255,60,60,0.16) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,60,60,0.16) 1px,transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(ellipse at center bottom,black 20%,transparent 70%);
+    -webkit-mask-image:radial-gradient(ellipse at center bottom,black 20%,transparent 70%);
+    animation:gridScroll 14s linear infinite;
+    opacity:0.65;
+  }
+  @keyframes gridScroll{0%{background-position:0 0}100%{background-position:0 60px}}
+
+  .ring{
+    position:absolute;top:50%;left:50%;
+    width:420px;height:420px;margin:-210px 0 0 -210px;
+    border-radius:50%;
+    border:1px solid rgba(255,80,80,0.16);
+    transform-style:preserve-3d;
+    animation:ringSpin 22s linear infinite;
+  }
+  .ring:nth-of-type(2){
+    width:560px;height:560px;margin:-280px 0 0 -280px;
+    border-color:rgba(255,80,80,0.09);
+    animation-duration:32s;animation-direction:reverse;
+  }
+  .ring:nth-of-type(3){
+    width:700px;height:700px;margin:-350px 0 0 -350px;
+    border-color:rgba(255,80,80,0.05);
+    animation-duration:48s;
+  }
+  @keyframes ringSpin{
+    0%{transform:rotateX(72deg) rotateZ(0deg)}
+    100%{transform:rotateX(72deg) rotateZ(360deg)}
+  }
+
+  /* === TOPBAR === */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;
+    z-index:50;
+    padding:18px 28px;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:20px;
+    background:linear-gradient(to bottom,rgba(6,6,7,0.85),transparent);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    animation:softEnter 0.7s cubic-bezier(0.25,0.46,0.45,0.94) backwards;
+  }
+  @keyframes softEnter{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+  .brand{
+    display:flex;align-items:center;gap:12px;
+    cursor:default;user-select:none;
+  }
+  .brand-logo{
+    width:38px;height:38px;border-radius:11px;
+    background:linear-gradient(160deg,#ffffff 0%,#cfcfd4 60%,#9a9aa2 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:
+      0 0 30px rgba(255,60,60,0.30),
+      0 0 0 1px rgba(255,255,255,0.10) inset;
+    transition:transform 0.4s cubic-bezier(0.2,0.9,0.3,1);
+  }
+  .brand:hover .brand-logo{transform:rotate(-8deg) scale(1.05)}
+  .brand-logo svg{width:20px;height:20px;color:#08080a}
+
+  .brand-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.02rem;font-weight:700;
+    letter-spacing:-0.03em;color:#fff;
+  }
+  .brand-name em{
+    font-style:normal;color:#ff5a5a;
+  }
+  .brand-tag{
+    font-size:0.6rem;font-weight:600;
+    letter-spacing:0.18em;text-transform:uppercase;
+    color:#6e6e78;
+    border-left:1px solid rgba(255,255,255,0.10);
+    padding-left:12px;margin-left:4px;
+  }
+
+  .top-actions{display:flex;align-items:center;gap:10px}
+
+  .icon-btn{
+    width:38px;height:38px;border-radius:11px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.08);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:all 0.25s cubic-bezier(0.2,0.9,0.3,1);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    color:#c9c9d1;
+  }
+  .icon-btn:hover{
+    background:rgba(255,255,255,0.07);
+    border-color:rgba(255,255,255,0.22);
+    color:#fff;
+    transform:translateY(-1px);
+  }
+  .icon-btn:active{transform:translateY(0) scale(0.96)}
+  .icon-btn svg{width:16px;height:16px}
+
+  /* === SEARCH DOCK === */
+  .search-dock{
+    position:fixed;top:80px;left:50%;
+    transform:translateX(-50%);
+    z-index:40;
+    width:min(620px,calc(100% - 40px));
+    animation:softEnter 0.7s 0.1s cubic-bezier(0.25,0.46,0.45,0.94) backwards;
+  }
+
+  .search-bar{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 8px 8px 18px;
+    border-radius:16px;
+    background:rgba(14,14,17,0.72);
+    border:1px solid rgba(255,255,255,0.10);
+    backdrop-filter:blur(18px) saturate(160%);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);
+    box-shadow:
+      0 20px 50px -20px rgba(0,0,0,0.8),
+      0 1px 0 0 rgba(255,255,255,0.06) inset;
+    transition:border-color 0.3s, box-shadow 0.3s;
+  }
+  .search-bar:focus-within{
+    border-color:rgba(255,80,80,0.45);
+    box-shadow:
+      0 20px 60px -20px rgba(255,60,60,0.35),
+      0 0 0 4px rgba(255,60,60,0.06),
+      0 1px 0 0 rgba(255,255,255,0.06) inset;
+  }
+  .search-bar svg.search-ico{width:18px;height:18px;color:#6e6e78;flex-shrink:0}
+
+  .search-bar input{
+    flex:1;background:transparent;border:none;outline:none;
+    color:#fff;font-family:inherit;
+    font-size:0.95rem;font-weight:500;
+    letter-spacing:-0.01em;
+    padding:12px 0;
+    min-width:0;
+  }
+  .search-bar input::placeholder{color:#4a4a55;font-weight:400}
+
+  .search-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:11px 20px;
+    border-radius:11px;
+    background:#ff3d3d;
+    color:#fff;
+    font-family:inherit;font-size:0.82rem;font-weight:600;
+    letter-spacing:-0.01em;
+    border:none;cursor:pointer;
+    transition:all 0.25s cubic-bezier(0.2,0.9,0.3,1);
+    box-shadow:0 8px 24px -8px rgba(255,60,60,0.7);
+    white-space:nowrap;
+  }
+  .search-btn:hover{background:#ff5252;transform:translateY(-1px);box-shadow:0 12px 28px -8px rgba(255,60,60,0.9)}
+  .search-btn:active{transform:translateY(0) scale(0.98)}
+  .search-btn svg{width:14px;height:14px}
+
+  .search-hints{
+    display:flex;gap:8px;justify-content:center;
+    margin-top:12px;flex-wrap:wrap;
+  }
+  .hint-chip{
+    font-size:0.68rem;font-weight:500;
+    color:#8f8f99;
+    padding:5px 11px;border-radius:8px;
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.07);
+    cursor:pointer;
+    transition:all 0.2s;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .hint-chip:hover{
+    color:#fff;border-color:rgba(255,80,80,0.4);
+    background:rgba(255,60,60,0.06);
+  }
+
+  /* === CANVAS GRAPHE === */
+  .graph-wrap{
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    z-index:10;
+    overflow:hidden;
+    cursor:grab;
+  }
+  .graph-wrap.panning{cursor:grabbing}
+  .graph-wrap.searching{cursor:progress}
+
+  .graph-canvas{
+    position:absolute;
+    top:0;left:0;
+    width:100%;height:100%;
+    transform-origin:0 0;
+    will-change:transform;
+  }
+
+  /* Connecteurs SVG */
+  .edges-svg{
+    position:absolute;
+    top:0;left:0;
+    width:6000px;height:4000px;
+    pointer-events:none;
+    overflow:visible;
+  }
+  .edge{
+    fill:none;
+    stroke:rgba(255,80,80,0.30);
+    stroke-width:1.5;
+    stroke-dasharray:6 8;
+    animation:dashFlow 1.6s linear infinite;
+    transition:stroke 0.3s;
+  }
+  .edge.active{stroke:rgba(255,80,80,0.85);stroke-width:2;filter:drop-shadow(0 0 6px rgba(255,60,60,0.6))}
+  @keyframes dashFlow{to{stroke-dashoffset:-28}}
+
+  .edge-glow{
+    fill:none;
+    stroke:rgba(255,60,60,0.10);
+    stroke-width:6;
+  }
+
+  /* Cartes */
+  .card{
+    position:absolute;
+    width:230px;
+    padding:16px 16px 15px;
+    border-radius:16px;
+    background:rgba(12,12,15,0.78);
+    border:1px solid rgba(255,255,255,0.10);
+    backdrop-filter:blur(16px) saturate(160%);
+    -webkit-backdrop-filter:blur(16px) saturate(160%);
+    box-shadow:
+      0 18px 40px -18px rgba(0,0,0,0.9),
+      0 1px 0 0 rgba(255,255,255,0.06) inset;
+    user-select:none;
+    cursor:grab;
+    transition:box-shadow 0.25s, border-color 0.25s, transform 0.35s cubic-bezier(0.2,0.9,0.3,1);
+    will-change:left,top;
+  }
+  .card:hover{
+    border-color:rgba(255,255,255,0.22);
+    box-shadow:
+      0 24px 55px -20px rgba(0,0,0,0.95),
+      0 0 0 1px rgba(255,80,80,0.10),
+      0 1px 0 0 rgba(255,255,255,0.08) inset;
+  }
+  .card.dragging{
+    cursor:grabbing;
+    z-index:1000!important;
+    box-shadow:
+      0 35px 80px -20px rgba(0,0,0,1),
+      0 0 0 1px rgba(255,80,80,0.35),
+      0 0 40px -5px rgba(255,60,60,0.25);
+    border-color:rgba(255,80,80,0.5);
+    transform:scale(1.02);
+  }
+  .card.spawn{
+    animation:cardSpawn 0.65s cubic-bezier(0.2,0.9,0.3,1) backwards;
+  }
+  @keyframes cardSpawn{
+    0%{opacity:0;transform:translateY(20px) scale(0.9)}
+    60%{opacity:1;transform:translateY(-3px) scale(1.015)}
+    100%{opacity:1;transform:translateY(0) scale(1)}
+  }
+
+  .card-head{
+    display:flex;align-items:center;gap:9px;
+    margin-bottom:11px;
+  }
+  .card-ico{
+    width:28px;height:28px;border-radius:9px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    background:rgba(255,60,60,0.10);
+    border:1px solid rgba(255,80,80,0.20);
+    color:#ff5a5a;
+  }
+  .card-ico svg{width:14px;height:14px}
+  .card-ico.green{background:rgba(0,224,122,0.10);border-color:rgba(0,224,122,0.28);color:#00e07a}
+  .card-ico.blue{background:rgba(77,163,255,0.10);border-color:rgba(77,163,255,0.28);color:#4da3ff}
+  .card-ico.amber{background:rgba(255,180,60,0.10);border-color:rgba(255,180,60,0.28);color:#ffb43c}
+  .card-ico.purple{background:rgba(180,120,255,0.10);border-color:rgba(180,120,255,0.28);color:#b478ff}
+
+  .card-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:0.78rem;font-weight:700;
+    letter-spacing:-0.01em;
+    color:#fff;
+    line-height:1.2;
+  }
+  .card-sub{
+    font-size:0.6rem;font-weight:500;
+    letter-spacing:0.14em;text-transform:uppercase;
+    color:#6e6e78;margin-top:2px;
+  }
+
+  .card-body{display:flex;flex-direction:column;gap:7px}
+  .card-row{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;
+    font-size:0.76rem;
+  }
+  .card-row .k{color:#6e6e78;font-weight:500}
+  .card-row .v{
+    color:#e8e8ec;font-weight:600;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.72rem;
+    text-align:right;
+    letter-spacing:-0.02em;
+  }
+  .card-row .v.good{color:#00e07a}
+  .card-row .v.bad{color:#ff5a5a}
+  .card-row .v.warn{color:#ffb43c}
+  .card-row .v.hi{color:#4da3ff}
+
+  .card-badge{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:3px 9px;border-radius:7px;
+    font-size:0.6rem;font-weight:700;
+    letter-spacing:0.06em;text-transform:uppercase;
+    font-family:'Inter',sans-serif;
+  }
+  .badge-live{background:rgba(0,224,122,0.12);color:#00e07a;border:1px solid rgba(0,224,122,0.3)}
+  .badge-dead{background:rgba(255,90,90,0.10);color:#ff5a5a;border:1px solid rgba(255,90,90,0.28)}
+  .badge-warn{background:rgba(255,180,60,0.10);color:#ffb43c;border:1px solid rgba(255,180,60,0.28)}
+  .badge-live .dot,.badge-dead .dot,.badge-warn .dot{
+    width:5px;height:5px;border-radius:50%;background:currentColor;
+    animation:pulseDot 1.8s ease-in-out infinite;
+  }
+  .badge-dead .dot{animation:none;opacity:0.6}
+  @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:0.3}}
+
+  /* Barre de fiabilité */
+  .reliability{
+    margin-top:11px;padding-top:11px;
+    border-top:1px solid rgba(255,255,255,0.06);
+  }
+  .reliability-head{
+    display:flex;justify-content:space-between;
+    font-size:0.58rem;font-weight:600;
+    letter-spacing:0.12em;text-transform:uppercase;
+    color:#6e6e78;margin-bottom:6px;
+  }
+  .reliability-head span:last-child{color:#c9c9d1}
+  .bar{
+    height:3px;border-radius:3px;
+    background:rgba(255,255,255,0.06);
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;border-radius:3px;
+    background:linear-gradient(90deg,#ff3d3d,#ff7a7a);
+    width:0;
+    animation:barGrow 1s cubic-bezier(0.2,0.9,0.3,1) forwards;
+    box-shadow:0 0 12px rgba(255,60,60,0.5);
+  }
+  .bar-fill.green{background:linear-gradient(90deg,#00e07a,#4dffa0);box-shadow:0 0 12px rgba(0,224,122,0.5)}
+  .bar-fill.blue{background:linear-gradient(90deg,#4da3ff,#7ac0ff);box-shadow:0 0 12px rgba(77,163,255,0.5)}
+  @keyframes barGrow{to{width:var(--w,60%)}}
+
+  /* Poignée de drag */
+  .card-grip{
+    position:absolute;top:8px;right:8px;
+    width:16px;height:16px;
+    display:flex;align-items:center;justify-content:center;
+    color:#3a3a42;
+    opacity:0;transition:opacity 0.2s;
+  }
+  .card:hover .card-grip{opacity:1}
+  .card-grip svg{width:10px;height:10px}
+
+  /* === HUD BAS === */
+  .hud{
+    position:fixed;bottom:22px;left:50%;
+    transform:translateX(-50%);
+    z-index:50;
+    display:flex;align-items:center;gap:8px;
+    padding:8px;
+    border-radius:14px;
+    background:rgba(10,10,13,0.72);
+    border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(18px) saturate(160%);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);
+    box-shadow:0 20px 50px -20px rgba(0,0,0,0.9);
+    animation:softEnter 0.7s 0.3s cubic-bezier(0.25,0.46,0.45,0.94) backwards;
+  }
+  .hud-btn{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:8px 13px;border-radius:9px;
+    background:transparent;border:1px solid transparent;
+    color:#8f8f99;font-family:inherit;
+    font-size:0.7rem;font-weight:600;
+    letter-spacing:-0.01em;
+    cursor:pointer;
+    transition:all 0.2s;
+    white-space:nowrap;
+  }
+  .hud-btn:hover{color:#fff;background:rgba(255,255,255,0.05)}
+  .hud-btn.active{color:#ff5a5a;background:rgba(255,60,60,0.08);border-color:rgba(255,80,80,0.25)}
+  .hud-btn svg{width:13px;height:13px}
+  .hud-sep{width:1px;height:20px;background:rgba(255,255,255,0.08)}
+
+  /* === ÉTAT VIDE === */
+  .empty-state{
+    position:fixed;inset:0;z-index:5;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    text-align:center;padding:0 24px;
+    pointer-events:none;
+    transition:opacity 0.5s;
+  }
+  .empty-state.hidden{opacity:0;pointer-events:none}
+  .empty-logo{
+    width:80px;height:80px;border-radius:22px;
+    background:linear-gradient(160deg,#ffffff 0%,#cfcfd4 60%,#9a9aa2 100%);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:26px;
+    box-shadow:
+      0 0 60px rgba(255,60,60,0.30),
+      0 0 0 1px rgba(255,255,255,0.10) inset,
+      0 30px 50px -20px rgba(0,0,0,0.8);
+    animation:floaty 5s ease-in-out infinite;
+  }
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .empty-logo svg{width:40px;height:40px;color:#08080a}
+  .empty-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(1.6rem,4vw,2.3rem);
+    font-weight:700;letter-spacing:-0.04em;
+    color:#fff;margin-bottom:14px;line-height:1.1;
+  }
+  .empty-title em{font-style:normal;color:#ff5a5a}
+  .empty-desc{
+    font-size:0.88rem;color:#8f8f99;
+    line-height:1.65;max-width:380px;
+  }
+  .empty-desc em{font-style:normal;color:#c9c9d1;font-weight:500}
+
+  /* === SCAN OVERLAY === */
+  .scan-overlay{
+    position:fixed;inset:0;z-index:200;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(6,6,7,0.82);
+    backdrop-filter:blur(14px) saturate(150%);
+    -webkit-backdrop-filter:blur(14px) saturate(150%);
+    opacity:0;pointer-events:none;
+    transition:opacity 0.35s;
+  }
+  .scan-overlay.open{opacity:1;pointer-events:auto}
+  .scan-box{
+    display:flex;flex-direction:column;align-items:center;gap:22px;
+    transform:scale(0.95);
+    transition:transform 0.4s cubic-bezier(0.2,0.9,0.3,1);
+  }
+  .scan-overlay.open .scan-box{transform:scale(1)}
+  .scan-ring{
+    width:80px;height:80px;position:relative;
+  }
+  .scan-ring::before,.scan-ring::after{
+    content:'';position:absolute;inset:0;
+    border-radius:50%;
+    border:2px solid transparent;
+    border-top-color:#ff3d3d;
+    animation:spin 1s linear infinite;
+  }
+  .scan-ring::after{
+    inset:10px;
+    border-top-color:transparent;
+    border-right-color:#ff7a7a;
+    animation-duration:1.6s;
+    animation-direction:reverse;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .scan-text{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.78rem;font-weight:500;
+    color:#c9c9d1;letter-spacing:0.05em;
+    min-height:1.2em;
+  }
+  .scan-text .cursor{
+    display:inline-block;width:7px;height:13px;
+    background:#ff5a5a;margin-left:2px;
+    vertical-align:middle;
+    animation:blink 0.9s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0}}
+
+  /* === MODALES === */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.72);
+    backdrop-filter:blur(14px) saturate(150%);
+    -webkit-backdrop-filter:blur(14px) saturate(150%);
+    z-index:500;
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:44px 20px;overflow-y:auto;
+    opacity:0;pointer-events:none;
+    transition:opacity 0.3s;
+  }
+  .modal-overlay.open{opacity:1;pointer-events:auto}
+  .modal{
+    background:#0c0c0e;
+    border:1px solid rgba(255,255,255,0.14);
+    border-radius:20px;
+    max-width:520px;width:100%;
+    max-height:80vh;overflow:auto;
+    padding:26px;position:relative;
+    transform:scale(0.95) translateY(16px);
+    transition:transform 0.4s cubic-bezier(0.2,0.9,0.3,1);
+    box-shadow:
+      0 40px 100px rgba(0,0,0,0.6),
+      0 1px 0 0 rgba(255,255,255,0.08) inset;
+    text-align:left;
+  }
+  .modal-overlay.open .modal{transform:scale(1) translateY(0)}
+  .modal-close{
+    position:absolute;top:14px;right:14px;
+    width:30px;height:30px;border-radius:9px;
+    background:rgba(20,20,24,0.5);
+    border:1px solid rgba(255,255,255,0.08);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all 0.2s;
+  }
+  .modal-close:hover{
+    background:rgba(30,30,36,0.8);
+    border-color:rgba(255,255,255,0.2);
+    transform:rotate(90deg);
+  }
+  .modal-close svg{width:12px;height:12px;color:#8a8a95}
+  .modal-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.1rem;font-weight:700;
+    color:#fff;margin-bottom:16px;letter-spacing:-0.02em;
+  }
+  .modal-body{font-size:0.82rem;color:#8a8a95;line-height:1.7}
+  .modal-body p{margin-bottom:12px}
+  .modal-body strong{color:#e8e8ec;font-weight:600}
+  .modal-body a{color:#4da3ff;text-decoration:none}
+  .modal-body a:hover{text-decoration:underline}
+  .modal-body h3{color:#fff;font-size:0.85rem;font-weight:600;margin:16px 0 8px}
+  .modal-body ul{padding-left:18px;margin-bottom:12px}
+  .modal-body li{margin-bottom:4px}
+
+  /* === RESPONSIVE === */
+  @media (max-width:640px){
+    .topbar{padding:14px 16px}
+    .brand-tag{display:none}
+    .brand-name{font-size:0.92rem}
+    .search-dock{top:70px;width:calc(100% - 32px)}
+    .search-bar{padding:6px 6px 6px 14px}
+    .search-bar input{font-size:0.88rem;padding:10px 0}
+    .search-btn{padding:10px 14px;font-size:0.76rem}
+    .search-btn span{display:none}
+    .hint-chip{font-size:0.62rem;padding:4px 9px}
+    .card{width:200px;padding:13px 13px 12px}
+    .card-title{font-size:0.72rem}
+    .card-row{font-size:0.7rem}
+    .card-row .v{font-size:0.66rem}
+    .hud{padding:6px;bottom:14px}
+    .hud-btn{padding:7px 10px;font-size:0.65rem}
+    .hud-btn span{display:none}
+    .ring{width:300px;height:300px;margin:-150px 0 0 -150px}
+    .ring:nth-of-type(2){width:400px;height:400px;margin:-200px 0 0 -200px}
+    .ring:nth-of-type(3){width:500px;height:500px;margin:-250px 0 0 -250px}
+    .empty-logo{width:64px;height:64px;border-radius:18px;margin-bottom:20px}
+    .empty-logo svg{width:32px;height:32px}
+  }
+</style>
+</head>
+<body>
+
+<!-- DÉCOR -->
+<div class="scene" aria-hidden="true">
+  <div class="grid-floor"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+    <div class="brand-name">Seek<em>It</em></div>
+    <div class="brand-tag">Phone Intel</div>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="aboutBtn" title="À propos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+    </button>
+    <button class="icon-btn" id="legalBtn" title="Mentions légales">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- SEARCH DOCK -->
+<div class="search-dock">
+  <div class="search-bar">
+    <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input type="tel" id="phoneInput" placeholder="+33 6 12 34 56 78" autocomplete="off" spellcheck="false" value="+33 6 12 34 56 78">
+    <button class="search-btn" id="searchBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+      <span>Analyser</span>
+    </button>
+  </div>
+  <div class="search-hints">
+    <div class="hint-chip" data-fill="+33 6 12 34 56 78">+33 6 12 34 56 78</div>
+    <div class="hint-chip" data-fill="+1 415 555 0132">+1 415 555 0132</div>
+    <div class="hint-chip" data-fill="+44 7700 900123">+44 7700 900123</div>
+    <div class="hint-chip" data-fill="+49 151 23456789">+49 151 23456789</div>
+  </div>
+</div>
+
+<!-- ÉTAT VIDE -->
+<div class="empty-state" id="emptyState">
+  <div class="empty-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+  </div>
+  <div class="empty-title">Traque un <em>numéro</em>.</div>
+  <p class="empty-desc">
+    Entre un numéro et laisse Seek It dérouler le fil : <em>opérateur, statut, localisation, entités liées</em>. Chaque carte est déplaçable — organise l'enquête à ta façon.
+  </p>
+</div>
+
+<!-- GRAPHE -->
+<div class="graph-wrap" id="graphWrap">
+  <div class="graph-canvas" id="graphCanvas">
+    <svg class="edges-svg" id="edgesSvg"></svg>
+    <div id="cardsLayer"></div>
+  </div>
+</div>
+
+<!-- HUD -->
+<div class="hud">
+  <button class="hud-btn active" id="layoutTree" title="Disposition arbre">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+      <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+    </svg>
+    <span>Arbre</span>
+  </button>
+  <button class="hud-btn" id="layoutRadial" title="Disposition radiale">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <circle cx="12" cy="12" r="9"></circle>
+      <line x1="12" y1="3" x2="12" y2="6"></line>
+      <line x1="12" y1="18" x2="12" y2="21"></line>
+      <line x1="3" y1="12" x2="6" y2="12"></line>
+      <line x1="18" y1="12" x2="21" y2="12"></line>
+    </svg>
+    <span>Radial</span>
+  </button>
+  <div class="hud-sep"></div>
+  <button class="hud-btn" id="resetView" title="Recentrer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 1 0 3-6.7"></path>
+      <polyline points="3 4 3 9 8 9"></polyline>
+    </svg>
+    <span>Recentrer</span>
+  </button>
+  <button class="hud-btn" id="clearBtn" title="Tout effacer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+    </svg>
+    <span>Effacer</span>
+  </button>
+</div>
+
+<!-- SCAN OVERLAY -->
+<div class="scan-overlay" id="scanOverlay">
+  <div class="scan-box">
+    <div class="scan-ring"></div>
+    <div class="scan-text" id="scanText">Init<span class="cursor"></span></div>
+  </div>
+</div>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal">
+    <button class="modal-close" data-close="aboutModal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="modal-title">À propos de Seek It</div>
+    <div class="modal-body">
+      <p><strong>Seek It</strong> est un moteur d'investigation téléphonique. Il recoupe opérateurs, plages de numérotation, bases publiques et fuites documentées pour dresser une carte des entités liées à un numéro.</p>
+      <h3>Comment ça marche</h3>
+      <p>Saisis un numéro (avec ou sans indicatif). Seek It affiche une carte centrale puis déploie les entités autour : opérateur, statut, localisation, ligne, appareil, entités liées.</p>
+      <h3>Manipulation</h3>
+      <ul>
+        <li><strong>Clic-glisser</strong> sur une carte : la déplacer</li>
+        <li><strong>Glisser dans le vide</strong> : déplacer la vue</li>
+        <li><strong>Molette</strong> : zoomer / dézoomer</li>
+        <li><strong>Arbre / Radial</strong> : réorganiser automatiquement</li>
+      </ul>
+      <h3>Confidentialité</h3>
+      <p>Aucune recherche n'est stockée côté serveur. Tout se passe localement.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="legalModal">
+  <div class="modal">
+    <button class="modal-close" data-close="legalModal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="modal-title">Mentions légales & RGPD</div>
+    <div class="modal-body">
+      <h3>1. Objet</h3>
+      <p>Seek It est un outil d'aide à l'investigation sur des données téléphoniques publiques. L'utilisateur est seul responsable de l'usage qu'il fait des informations consultées.</p>
+      <h3>2. Sources</h3>
+      <p>Plages de numérotation officielles, registres d'opérateurs, bases publiques, fuites documentées. Seek It n'effectue aucune intrusion ni interception.</p>
+      <h3>3. Utilisation interdite</h3>
+      <p>Toute utilisation à des fins de harcèlement, doxxing, chantage ou atteinte à la vie privée est strictement prohibée.</p>
+      <h3>4. Responsabilité</h3>
+      <p>Les résultats peuvent être incomplets ou approximatifs. Vérifie toute information avant usage.</p>
+      <h3>5. RGPD</h3>
+      <p>Aucune recherche stockée, aucun cookie de tracking. Le stockage local (localStorage) ne sert qu'à tes préférences d'affichage. Droit d'accès, rectification et suppression : <a href="https://discord.gg/GT2C3f6cgQ" target="_blank" rel="noopener noreferrer">Discord</a></p>
+      <h3>6. Cookies</h3>
+      <p>Aucun cookie tiers, aucun pixel, aucun analytics externe.</p>
+      <p style="margin-top:16px;font-size:0.75rem;color:#4a4a55">Dernière modification : 18 sept. 2026</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   SEEK IT — Phone Intel Graph
+   ========================================================= */
+(function(){
+  "use strict";
+
+  /* ---------- Éléments ---------- */
+  var graphWrap   = document.getElementById('graphWrap');
+  var graphCanvas = document.getElementById('graphCanvas');
+  var edgesSvg    = document.getElementById('edgesSvg');
+  var cardsLayer  = document.getElementById('cardsLayer');
+  var emptyState  = document.getElementById('emptyState');
+  var scanOverlay = document.getElementById('scanOverlay');
+  var scanText    = document.getElementById('scanText');
+  var phoneInput  = document.getElementById('phoneInput');
+  var searchBtn   = document.getElementById('searchBtn');
+
+  var layoutTree   = document.getElementById('layoutTree');
+  var layoutRadial = document.getElementById('layoutRadial');
+  var resetView    = document.getElementById('resetView');
+  var clearBtn     = document.getElementById('clearBtn');
+
+  /* ---------- État ---------- */
+  var cards = [];        // { id, el, x, y, w, h, node, parent }
+  var edges = [];        // { from, to, el, glow }
+  var view  = { x:0, y:0, scale:1 };
+  var isPanning = false;
+  var panStart = { x:0, y:0, vx:0, vy:0 };
+  var currentLayout = 'tree';
+  var nodeIdCounter = 0;
+
+  /* ---------- Utilitaires ---------- */
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function rand(min,max){ return Math.random()*(max-min)+min; }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  /* ---------- Vue (pan / zoom) ---------- */
+  function applyView(){
+    graphCanvas.style.transform =
+      'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.scale + ')';
+  }
+
+  graphWrap.addEventListener('wheel', function(e){
+    if(e.target.closest('.card')) return;
+    e.preventDefault();
+    var rect = graphWrap.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var oldScale = view.scale;
+    var delta = -e.deltaY * 0.0015;
+    var newScale = clamp(oldScale * (1 + delta), 0.35, 2.2);
+    // Zoom vers le curseur
+    view.x = mx - (mx - view.x) * (newScale / oldScale);
+    view.y = my - (my - view.y) * (newScale / oldScale);
+    view.scale = newScale;
+    applyView();
+  }, { passive:false });
+
+  graphWrap.addEventListener('mousedown', function(e){
+    if(e.target.closest('.card')) return;
+    if(e.target.closest('.hud')) return;
+    isPanning = true;
+    graphWrap.classList.add('panning');
+    panStart.x = e.clientX;
+    panStart.y = e.clientY;
+    panStart.vx = view.x;
+    panStart.vy = view.y;
+  });
+
+  window.addEventListener('mousemove', function(e){
+    if(!isPanning) return;
+    view.x = panStart.vx + (e.clientX - panStart.x);
+    view.y = panStart.vy + (e.clientY - panStart.y);
+    applyView();
+  });
+
+  window.addEventListener('mouseup', function(){
+    isPanning = false;
+    graphWrap.classList.remove('panning');
+  });
+
+  /* ---------- Création de carte ---------- */
+  var ICONS = {
+    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+    signal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+    sim: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6"/><path d="M9 10h6"/><path d="M9 14h6"/></svg>',
+    device: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+    user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+    wifi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+  };
+
+  function createCard(opts){
+    // opts: { title, sub, icon, tone, rows:[{k,v,cls}], badge:{text,tone}, reliability:{value,tone,label} }
+    var id = 'c' + (++nodeIdCounter);
+
+    var el = document.createElement('div');
+    el.className = 'card spawn';
+    el.dataset.id = id;
+
+    var head = document.createElement('div');
+    head.className = 'card-head';
+
+    var ico = document.createElement('div');
+    ico.className = 'card-ico' + (opts.tone ? ' ' + opts.tone : '');
+    ico.innerHTML = ICONS[opts.icon] || ICONS.phone;
+    head.appendChild(ico);
+
+    var titles = document.createElement('div');
+    titles.style.flex = '1';
+    titles.style.minWidth = '0';
+    var t = document.createElement('div');
+    t.className = 'card-title';
+    t.textContent = opts.title;
+    var s = document.createElement('div');
+    s.className = 'card-sub';
+    s.textContent = opts.sub || '';
+    titles.appendChild(t);
+    titles.appendChild(s);
+    head.appendChild(titles);
+
+    // Poignée
+    var grip = document.createElement('div');
+    grip.className = 'card-grip';
+    grip.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+    el.appendChild(grip);
+
+    el.appendChild(head);
+
+    // Badge
+    if(opts.badge){
+      var badge = document.createElement('div');
+      badge.className = 'card-badge badge-' + opts.badge.tone;
+      badge.innerHTML = '<span class="dot"></span>' + opts.badge.text;
+      badge.style.marginBottom = '10px';
+      el.appendChild(badge);
+    }
+
+    // Rows
+    if(opts.rows && opts.rows.length){
+      var body = document.createElement('div');
+      body.className = 'card-body';
+      opts.rows.forEach(function(r){
+        var row = document.createElement('div');
+        row.className = 'card-row';
+        var k = document.createElement('span');
+        k.className = 'k';
+        k.textContent = r.k;
+        var v = document.createElement('span');
+        v.className = 'v' + (r.cls ? ' ' + r.cls : '');
+        v.textContent = r.v;
+        row.appendChild(k);
+        row.appendChild(v);
+        body.appendChild(row);
+      });
+      el.appendChild(body);
+    }
+
+    // Fiabilité
+    if(opts.reliability){
+      var rel = document.createElement('div');
+      rel.className = 'reliability';
+      var rh = document.createElement('div');
+      rh.className = 'reliability-head';
+      rh.innerHTML = '<span>' + (opts.reliability.label || 'Fiabilité') + '</span><span>' + opts.reliability.value + '%</span>';
+      var bar = document.createElement('div');
+      bar.className = 'bar';
+      var fill = document.createElement('div');
+      fill.className = 'bar-fill' + (opts.reliability.tone ? ' ' + opts.reliability.tone : '');
+      fill.style.setProperty('--w', opts.reliability.value + '%');
+      bar.appendChild(fill);
+      rel.appendChild(rh);
+      rel.appendChild(bar);
+      el.appendChild(rel);
+    }
+
+    cardsLayer.appendChild(el);
+
+    var card = {
+      id: id,
+      el: el,
+      x: 0, y: 0,
+      w: 230, h: el.offsetHeight || 120,
+      node: opts
+    };
+
+    // Drag
+    makeDraggable(card);
+
+    cards.push(card);
+    return card;
+  }
+
+  /* ---------- Drag des cartes ---------- */
+  function makeDraggable(card){
+    var startX, startY, origX, origY, dragging = false;
+
+    card.el.addEventListener('mousedown', function(e){
+      if(e.button !== 0) return;
+      e.stopPropagation();
+      dragging = true;
+      card.el.classList.add('dragging');
+      startX = e.clientX;
+      startY = e.clientY;
+      origX = card.x;
+      origY = card.y;
+      card.el.style.zIndex = 9999;
+    });
+
+    window.addEventListener('mousemove', function(e){
+      if(!dragging) return;
+      var dx = (e.clientX - startX) / view.scale;
+      var dy = (e.clientY - startY) / view.scale;
+      card.x = origX + dx;
+      card.y = origY + dy;
+      positionCard(card);
+      updateAllEdges();
+    });
+
+    window.addEventListener('mouseup', function(){
+      if(!dragging) return;
+      dragging = false;
+      card.el.classList.remove('dragging');
+      card.el.style.zIndex = '';
+    });
+
+    // Touch
+    card.el.addEventListener('touchstart', function(e){
+      if(e.touches.length !== 1) return;
+      e.stopPropagation();
+      var t = e.touches[0];
+      dragging = true;
+      card.el.classList.add('dragging');
+      startX = t.clientX;
+      startY = t.clientY;
+      origX = card.x;
+      origY = card.y;
+      card.el.style.zIndex = 9999;
+    }, { passive:true });
+
+    window.addEventListener('touchmove', function(e){
+      if(!dragging || e.touches.length !== 1) return;
+      e.preventDefault();
+      var t = e.touches[0];
+      var dx = (t.clientX - startX) / view.scale;
+      var dy = (t.clientY - startY) / view.scale;
+      card.x = origX + dx;
+      card.y = origY + dy;
+      positionCard(card);
+      updateAllEdges();
+    }, { passive:false });
+
+    window.addEventListener('touchend', function(){
+      if(!dragging) return;
+      dragging = false;
+      card.el.classList.remove('dragging');
+      card.el.style.zIndex = '';
+    });
+  }
+
+  function positionCard(card){
+    card.el.style.left = card.x + 'px';
+    card.el.style.top  = card.y + 'px';
+  }
+
+  /* ---------- Création de connecteur ---------- */
+  function createEdge(fromCard, toCard){
+    var glow = document.createElementNS('http://www.w3.org/2000/svg','path');
+    glow.setAttribute('class','edge-glow');
+    var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('class','edge');
+
+    edgesSvg.appendChild(glow);
+    edgesSvg.appendChild(path);
+
+    var edge = { from: fromCard, to: toCard, el: path, glow: glow };
+    edges.push(edge);
+    return edge;
+  }
+
+  function edgePath(a, b){
+    // Points de sortie : bas de la carte source, haut de la carte cible
+    var ax = a.x + a.w / 2;
+    var ay = a.y + a.h;
+    var bx = b.x + b.w / 2;
+    var by = b.y;
+
+    var dy = Math.max(40, Math.abs(by - ay) * 0.5);
+    // Courbe de Bézier verticale douce
+    return 'M ' + ax + ' ' + ay +
+           ' C ' + ax + ' ' + (ay + dy) +
+           ', ' + bx + ' ' + (by - dy) +
+           ', ' + bx + ' ' + by;
+  }
+
+  function updateAllEdges(){
+    edges.forEach(function(e){
+      var d = edgePath(e.from, e.to);
+      e.el.setAttribute('d', d);
+      e.glow.setAttribute('d', d);
+    });
+  }
+
+  /* ---------- Layouts ---------- */
+  function layoutTreeLayout(){
+    // Racine en haut, niveau 1 en dessous, niveau 2 en dessous
+    var root = cards[0];
+    if(!root) return;
+
+    // Grouper par "depth" via parent
+    var children = cards.filter(function(c){ return c !== root; });
+
+    var vw = graphWrap.clientWidth;
+    var vh = graphWrap.clientHeight;
+
+    // Racine centrée
+    root.x = vw / 2 - root.w / 2 - view.x / view.scale;
+    root.y = 140 - view.y / view.scale;
+
+    // Niveau 1 : ceux sans enfants → répartis en éventail
+    // On fait un arbre simple : tous les enfants directs du root
+    var level1 = [];
+    var level2 = [];
+    children.forEach(function(c){
+      if(c.node && c.node.parent === 'root') level1.push(c);
+      else level2.push(c);
+    });
+    // Si pas de parent défini, on met tout en level1
+    if(level1.length === 0){ level1 = children; level2 = []; }
+
+    // Level 1 : grille horizontale
+    var cols1 = level1.length;
+    var spacingX = 260;
+    var totalW1 = (cols1 - 1) * spacingX;
+    var startX1 = vw / 2 - totalW1 / 2 - view.x / view.scale;
+    var y1 = 400 - view.y / view.scale;
+
+    level1.forEach(function(c, i){
+      c.x = startX1 + i * spacingX - c.w / 2;
+      c.y = y1;
+    });
+
+    // Level 2 : sous level1
+    if(level2.length){
+      var cols2 = level2.length;
+      var totalW2 = (cols2 - 1) * spacingX;
+      var startX2 = vw / 2 - totalW2 / 2 - view.x / view.scale;
+      var y2 = 640 - view.y / view.scale;
+      level2.forEach(function(c, i){
+        c.x = startX2 + i * spacingX - c.w / 2;
+        c.y = y2;
+      });
+    }
+
+    cards.forEach(positionCard);
+    // Ajuster la taille du SVG
+    var maxY = 0, maxX = 0;
+    cards.forEach(function(c){ maxY = Math.max(maxY, c.y + c.h + 200); maxX = Math.max(maxX, c.x + c.w + 200); });
+    edgesSvg.setAttribute('width', Math.max(3000, maxX));
+    edgesSvg.setAttribute('height', Math.max(2500, maxY));
+    updateAllEdges();
+  }
+
+  function layoutRadialLayout(){
+    var root = cards[0];
+    if(!root) return;
+
+    var vw = graphWrap.clientWidth;
+    var vh = graphWrap.clientHeight;
+
+    var cx = vw / 2 - root.w / 2 - view.x / view.scale;
+    var cy = vh / 2 - root.h / 2 - view.y / view.scale;
+    root.x = cx;
+    root.y = cy;
+
+    var others = cards.filter(function(c){ return c !== root; });
+    var n = others.length;
+    var radius = Math.min(vw, vh) * 0.32;
+    var angleStep = (Math.PI * 2) / Math.max(1, n);
+
+    others.forEach(function(c, i){
+      var angle = -Math.PI / 2 + i * angleStep;
+      c.x = cx + root.w / 2 - c.w / 2 + Math.cos(angle) * radius;
+      c.y = cy + root.h / 2 - c.h / 2 + Math.sin(angle) * radius;
+    });
+
+    cards.forEach(positionCard);
+    edgesSvg.setAttribute('width', Math.max(3000, vw * 2));
+    edgesSvg.setAttribute('height', Math.max(2500, vh * 2));
+    updateAllEdges();
+  }
+
+  function applyLayout(){
+    if(currentLayout === 'tree') layoutTreeLayout();
+    else layoutRadialLayout();
+  }
+
+  /* ---------- Génération des données ---------- */
+  function detectCountry(num){
+    var clean = num.replace(/[\s\-\(\)]/g,'');
+    if(clean.startsWith('+33') || clean.startsWith('0033')) return { code:'FR', name:'France', flag:'🇫🇷', prefix:'+33' };
+    if(clean.startsWith('+1'))   return { code:'US', name:'États-Unis', flag:'🇺🇸', prefix:'+1' };
+    if(clean.startsWith('+44'))  return { code:'GB', name:'Royaume-Uni', flag:'🇬🇧', prefix:'+44' };
+    if(clean.startsWith('+49'))  return { code:'DE', name:'Allemagne', flag:'🇩🇪', prefix:'+49' };
+    if(clean.startsWith('+34'))  return { code:'ES', name:'Espagne', flag:'🇪🇸', prefix:'+34' };
+    if(clean.startsWith('+39'))  return { code:'IT', name:'Italie', flag:'🇮🇹', prefix:'+39' };
+    if(clean.startsWith('+32'))  return { code:'BE', name:'Belgique', flag:'🇧🇪', prefix:'+32' };
+    if(clean.startsWith('+41'))  return { code:'CH', name:'Suisse', flag:'🇨🇭', prefix:'+41' };
+    return { code:'??', name:'Inconnu', flag:'🌍', prefix:'+' };
+  }
+
+  function detectOperator(num, country){
+    var clean = num.replace(/[\s\-\(\)]/g,'');
+    var m;
+    if(country.code === 'FR'){
+      m = clean.match(/^(\+33|0033)([67])(\d{8})$/);
+      if(m){
+        return { name:'Orange', tone:'amber', tech:'GSM / LTE / 5G', mccmnc:'208-01' };
+      }
+      m = clean.match(/^(\+33|0033)([67])(\d{8})$/);
+    }
+    if(country.code === 'US'){
+      return { name:'Verizon Wireless', tone:'', tech:'CDMA / LTE / 5G', mccmnc:'310-012' };
+    }
+    if(country.code === 'GB'){
+      return { name:'EE', tone:'', tech:'GSM / LTE / 5G', mccmnc:'234-30' };
+    }
+    if(country.code === 'DE'){
+      return { name:'Telekom', tone:'', tech:'GSM / LTE / 5G', mccmnc:'262-01' };
+    }
+    return { name:'Opérateur inconnu', tone:'warn', tech:'—', mccmnc:'—' };
+  }
+
+  function formatNumber(num){
+    var clean = num.replace(/[\s\-\(\)]/g,'');
+    if(clean.startsWith('+33') && clean.length === 12){
+      return '+33 ' + clean[3] + ' ' + clean.slice(4).replace(/(\d{2})(?=\d)/g,'$1 ');
+    }
+    return num;
+  }
+
+  function fakeLineType(num){
+    var last = num.replace(/\D/g,'').slice(-1);
+    if(parseInt(last) % 3 === 0) return { text:'Mobile', cls:'good' };
+    if(parseInt(last) % 3 === 1) return { text:'Fixe', cls:'' };
+    return { text:'VoIP', cls:'hi' };
+  }
+
+  function buildGraph(num){
+    var country = detectCountry(num);
+    var op = detectOperator(num, country);
+    var lineType = fakeLineType(num);
+    var clean = num.replace(/[\s\-\(\)]/g,'');
+    var last4 = clean.slice(-4);
+    var isActive = (parseInt(last4[0]) % 5 !== 0);
+
+    // Racine
+    var root = createCard({
+      title: formatNumber(num),
+      sub: 'Numéro cible',
+      icon: 'phone',
+      tone: '',
+      badge: { text: isActive ? 'Actif' : 'Inactif', tone: isActive ? 'live' : 'dead' },
+      rows: [
+        { k: 'Pays', v: country.flag + ' ' + country.name, cls: '' },
+        { k: 'Indicatif', v: country.prefix, cls: 'hi' },
+        { k: 'Format E.164', v: clean, cls: '' }
+      ],
+      reliability: { value: 92, tone: '', label: 'Confiance' },
+      parent: null
+    });
+
+    // Fils — opérateur
+    var opCard = createCard({
+      title: op.name,
+      sub: 'Opérateur',
+      icon: 'signal',
+      tone: op.tone,
+      rows: [
+        { k: 'Techno', v: op.tech, cls: '' },
+        { k: 'MCC-MNC', v: op.mccmnc, cls: 'hi' },
+        { k: 'Pays', v: country.code, cls: '' }
+      ],
+      reliability: { value: 88, tone: 'amber', label: 'Attribution' },
+      parent: 'root'
+    });
+
+    // Statut
+    var statusCard = createCard({
+      title: 'Statut ligne',
+      sub: 'État temps réel',
+      icon: 'wifi',
+      tone: isActive ? 'green' : 'red',
+      badge: { text: isActive ? 'En service' : 'Hors service', tone: isActive ? 'live' : 'dead' },
+      rows: [
+        { k: 'Dernier signal', v: isActive ? 'il y a 2 min' : 'il y a 47 j', cls: isActive ? 'good' : 'bad' },
+        { k: 'Itinérance', v: isActive ? 'Non' : '—', cls: '' },
+        { k: 'Portabilité', v: 'Conservé', cls: 'good' }
+      ],
+      reliability: { value: isActive ? 96 : 71, tone: isActive ? 'green' : '', label: 'Fraîcheur' },
+      parent: 'root'
+    });
+
+    // Type de ligne
+    var typeCard = createCard({
+      title: 'Type de ligne',
+      sub: 'Classification',
+      icon: 'sim',
+      tone: 'blue',
+      rows: [
+        { k: 'Catégorie', v: lineType.text, cls: lineType.cls },
+        { k: 'Préfixe', v: clean.slice(0, 5), cls: '' },
+        { k: 'Bloc', v: clean.slice(0, 8) + '…', cls: '' }
+      ],
+      reliability: { value: 84, tone: 'blue', label: 'Classification' },
+      parent: 'root'
+    });
+
+    // Localisation
+    var cities = ['Paris','Lyon','Marseille','Bordeaux','Lille','Toulouse','Nantes','Nice'];
+    var city = cities[parseInt(last4) % cities.length];
+    var locCard = createCard({
+      title: city,
+      sub: 'Zone d\'attribution',
+      icon: 'globe',
+      tone: 'purple',
+      rows: [
+        { k: 'Région', v: country.code + '-IDF', cls: '' },
+        { k: 'Fuseau', v: 'UTC+1', cls: 'hi' },
+        { k: 'Zone', v: 'Urbaine', cls: '' }
+      ],
+      reliability: { value: 76, tone: 'blue', label: 'Géoloc' },
+      parent: 'root'
+    });
+
+    // Appareil
+    var devices = ['iPhone 14 Pro','Samsung Galaxy S23','Google Pixel 8','Xiaomi 13','OnePlus 11'];
+    var device = devices[parseInt(last4[1] || '0') % devices.length];
+    var devCard = createCard({
+      title: device,
+      sub: 'Appareil détecté',
+      icon: 'device',
+      tone: '',
+      rows: [
+        { k: 'OS', v: device.indexOf('iPhone') >= 0 ? 'iOS 17.4' : 'Android 14', cls: '' },
+        { k: 'Dernière vue', v: isActive ? 'Aujourd\'hui' : 'Avr. 2026', cls: isActive ? 'good' : 'warn' },
+        { k: 'SIM', v: 'eSIM', cls: 'hi' }
+      ],
+      reliability: { value: 68, tone: 'amber', label: 'Estim.' },
+      parent: 'root'
+    });
+
+    // Entités liées
+    var entityCard = createCard({
+      title: '3 entités liées',
+      sub: 'Recoupements',
+      icon: 'link',
+      tone: 'blue',
+      rows: [
+        { k: 'Comptes', v: '2', cls: '' },
+        { k: 'Emails', v: '1', cls: 'hi' },
+        { k: 'Adresses', v: '1', cls: '' }
+      ],
+      reliability: { value: 81, tone: 'blue', label: 'Corrélation' },
+      parent: 'root'
+    });
+
+    // Historique
+    var histCard = createCard({
+      title: 'Historique',
+      sub: 'Portabilité / changements',
+      icon: 'clock',
+      tone: '',
+      rows: [
+        { k: 'Création', v: '2019-03', cls: '' },
+        { k: 'Portages', v: '1', cls: 'warn' },
+        { k: 'Dernier op.', v: '2024-11', cls: '' }
+      ],
+      reliability: { value: 73, tone: 'amber', label: 'Traçabilité' },
+      parent: 'root'
+    });
+
+    // Risque
+    var riskCard = createCard({
+      title: isActive ? 'Risque faible' : 'Risque modéré',
+      sub: 'Analyse',
+      icon: isActive ? 'shield' : 'alert',
+      tone: isActive ? 'green' : 'amber',
+      badge: { text: isActive ? 'Sûr' : 'À vérifier', tone: isActive ? 'live' : 'warn' },
+      rows: [
+        { k: 'Spam reports', v: isActive ? '0' : '3', cls: isActive ? 'good' : 'warn' },
+        { k: 'Blacklist', v: 'Non', cls: 'good' },
+        { k: 'Score', v: isActive ? 'A' : 'C', cls: isActive ? 'good' : 'warn' }
+      ],
+      reliability: { value: isActive ? 90 : 65, tone: isActive ? 'green' : '', label: 'Score' },
+      parent: 'root'
+    });
+
+    // Connecteurs
+    var all = [opCard, statusCard, typeCard, locCard, devCard, entityCard, histCard, riskCard];
+    all.forEach(function(c){ createEdge(root, c); });
+
+    // Layout initial
+    requestAnimationFrame(function(){
+      // Forcer la mesure de hauteur
+      cards.forEach(function(c){ c.h = c.el.offsetHeight; c.w = c.el.offsetWidth; });
+      applyLayout();
+      fitView();
+    });
+  }
+
+  /* ---------- Fit view ---------- */
+  function fitView(){
+    if(cards.length === 0) return;
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    cards.forEach(function(c){
+      minX = Math.min(minX, c.x);
+      minY = Math.min(minY, c.y);
+      maxX = Math.max(maxX, c.x + c.w);
+      maxY = Math.max(maxY, c.y + c.h);
+    });
+    var pad = 120;
+    var bboxW = (maxX - minX) + pad * 2;
+    var bboxH = (maxY - minY) + pad * 2;
+    var vw = graphWrap.clientWidth;
+    var vh = graphWrap.clientHeight;
+    var scale = Math.min(vw / bboxW, vh / bboxH, 1.1);
+    scale = clamp(scale, 0.35, 1.1);
+    view.scale = scale;
+    view.x = (vw - bboxW * scale) / 2 - (minX - pad) * scale;
+    view.y = (vh - bboxH * scale) / 2 - (minY - pad) * scale;
+    applyView();
+  }
+
+  /* ---------- Scan / recherche ---------- */
+  var scanMessages = [
+    'Résolution du préfixe…',
+    'Interrogation des registres opérateur…',
+    'Croisement des bases publiques…',
+    'Détection du type de ligne…',
+    'Analyse du statut temps réel…',
+    'Corrélation des entités liées…',
+    'Calcul des scores de confiance…',
+    'Construction du graphe…'
+  ];
+
+  function runScan(callback){
+    scanOverlay.classList.add('open');
+    var i = 0;
+    var interval = setInterval(function(){
+      if(i < scanMessages.length){
+        scanText.innerHTML = scanMessages[i] + '<span class="cursor"></span>';
+        i++;
+      }
+    }, 260);
+
+    setTimeout(function(){
+      clearInterval(interval);
+      scanOverlay.classList.remove('open');
+      callback();
+    }, 260 * scanMessages.length + 200);
+  }
+
+  function clearGraph(){
+    cards.forEach(function(c){ c.el.remove(); });
+    edges.forEach(function(e){ e.el.remove(); e.glow.remove(); });
+    cards = [];
+    edges = [];
+    edgesSvg.innerHTML = '';
+    nodeIdCounter = 0;
+  }
+
+  function doSearch(){
+    var num = phoneInput.value.trim();
+    if(!num || num.replace(/\D/g,'').length < 6){
+      phoneInput.focus();
+      phoneInput.style.transition = 'transform 0.1s';
+      var shake = 0;
+      var shakeInt = setInterval(function(){
+        phoneInput.style.transform = 'translateX(' + (shake % 2 ? 4 : -4) + 'px)';
+        shake++;
+        if(shake > 5){ clearInterval(shakeInt); phoneInput.style.transform = ''; }
+      }, 50);
+      return;
+    }
+
+    graphWrap.classList.add('searching');
+    runScan(function(){
+      clearGraph();
+      buildGraph(num);
+      emptyState.classList.add('hidden');
+      graphWrap.classList.remove('searching');
+    });
+  }
+
+  searchBtn.addEventListener('click', doSearch);
+  phoneInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') doSearch();
+  });
+
+  document.querySelectorAll('.hint-chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      phoneInput.value = chip.dataset.fill;
+      phoneInput.focus();
+    });
+  });
+
+  /* ---------- HUD ---------- */
+  layoutTree.addEventListener('click', function(){
+    currentLayout = 'tree';
+    layoutTree.classList.add('active');
+    layoutRadial.classList.remove('active');
+    // Recentrer la vue
+    view.x = 0; view.y = 0; view.scale = 1; applyView();
+    applyLayout();
+    fitView();
+  });
+
+  layoutRadial.addEventListener('click', function(){
+    currentLayout = 'radial';
+    layoutRadial.classList.add('active');
+    layoutTree.classList.remove('active');
+    view.x = 0; view.y = 0; view.scale = 1; applyView();
+    applyLayout();
+    fitView();
+  });
+
+  resetView.addEventListener('click', function(){
+    fitView();
+  });
+
+  clearBtn.addEventListener('click', function(){
+    clearGraph();
+    emptyState.classList.remove('hidden');
+  });
+
+  /* ---------- Redimensionnement ---------- */
+  window.addEventListener('resize', function(){
+    if(cards.length) applyLayout();
+  });
+
+  /* ---------- Modales ---------- */
+  function openModal(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.classList.add('open');
+  }
+  function closeModal(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.classList.remove('open');
+  }
+  document.getElementById('aboutBtn').addEventListener('click', function(){ openModal('aboutModal'); });
+  document.getElementById('legalBtn').addEventListener('click', function(){ openModal('legalModal'); });
+  document.querySelectorAll('.modal-close').forEach(function(btn){
+    btn.addEventListener('click', function(){ closeModal(btn.getAttribute('data-close')); });
+  });
+  document.querySelectorAll('.modal-overlay').forEach(function(ov){
+    ov.addEventListener('click', function(e){
+      if(e.target === ov) ov.classList.remove('open');
+    });
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      document.querySelectorAll('.modal-overlay.open').forEach(function(m){ m.classList.remove('open'); });
+    }
+  });
+
+  /* ---------- Init ---------- */
+  applyView();
+  // Pré-remplir avec le numéro par défaut, mais ne pas lancer automatiquement
+  // L'utilisateur clique "Analyser" (ou Entrée) pour voir le graphe.
+  // Pour une démo plus fluide, on peut lancer une fois après 600ms :
+  setTimeout(function(){
+    if(!cards.length) doSearch();
+  }, 700);
+
+})();
+</script>
+
+</body>
+</html>
