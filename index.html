@@ -2308,27 +2308,43 @@ document.getElementById("adminAddBtn").addEventListener("click", async () => {
 });
 
 /* ===== TYPEWRITER ===== */
+/* ===== TYPEWRITER ===== */
 (function typewriter() {
   const el = document.getElementById("typewriter");
   if (!el) return;
-  const words = ["un prénom", "un nom", "un email", "un téléphone", "une ville", "un pays"];
-  let wordIdx = 0;
+
+  // Chaque entrée a son préfixe correct grammaticalement :
+  // "d'un" pour masculin, "d'une" pour féminin.
+  // Le préfixe + le mot sont effacés ET réécrits ensemble,
+  // donc pas de faute d'orthographe pendant l'animation.
+  const phrases = [
+    "d'un prénom",
+    "d'un nom",
+    "d'un email",
+    "d'un téléphone",
+    "d'une ville",
+    "d'un pays"
+  ];
+
+  let phraseIdx = 0;
   let charIdx = 0;
   let deleting = false;
 
   function render() {
-    const cur = words[wordIdx];
+    const cur = phrases[phraseIdx];
     const shown = cur.slice(0, charIdx);
     el.innerHTML = `${shown}<span class="cursor"></span>`;
   }
+
   function tick() {
-    const cur = words[wordIdx];
+    const cur = phrases[phraseIdx];
+
     if (!deleting) {
       charIdx++;
       render();
       if (charIdx >= cur.length) {
         deleting = true;
-        setTimeout(tick, 1600);
+        setTimeout(tick, 1600); // pause mot complet
         return;
       }
       setTimeout(tick, 70);
@@ -2337,13 +2353,14 @@ document.getElementById("adminAddBtn").addEventListener("click", async () => {
       render();
       if (charIdx <= 0) {
         deleting = false;
-        wordIdx = (wordIdx + 1) % words.length;
+        phraseIdx = (phraseIdx + 1) % phrases.length;
         setTimeout(tick, 300);
         return;
       }
       setTimeout(tick, 35);
     }
   }
+
   setTimeout(tick, 600);
 })();
 
