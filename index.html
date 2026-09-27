@@ -44,6 +44,36 @@
     padding-top:72px;
   }
   body.modal-open { overflow:hidden; }
+
+  /* ===== ANIMATIONS & TRANSPARENCE ===== */
+  @keyframes fadeInUp {
+    from { opacity:0; transform:translateY(12px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity:0; }
+    to { opacity:1; }
+  }
+  @keyframes slideDown {
+    from { opacity:0; transform:translateY(-8px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes dotPulse {
+    0%, 100% { opacity:1; transform:scale(1); }
+    50% { opacity:0.4; transform:scale(0.85); }
+  }
+  @keyframes blink {
+    0%, 50% { opacity:1; }
+    51%, 100% { opacity:0; }
+  }
+  @keyframes toastIn {
+    from { opacity:0; transform:translateY(10px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @keyframes toastOut {
+    to { opacity:0; transform:translateY(10px); }
+  }
+
   a { color:var(--accent); text-decoration:none; }
   a:hover { text-decoration:underline; }
   button { font-family:inherit; cursor:pointer; }
@@ -52,7 +82,7 @@
   /* ===== LOGIN ===== */
   .login-screen {
     position:fixed; inset:0; z-index:1000;
-    background:var(--bg);
+    background:radial-gradient(ellipse at top, rgba(0,196,106,0.06) 0%, transparent 55%), var(--bg);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     padding:24px; text-align:center;
     transition:opacity 0.35s ease, visibility 0.35s;
@@ -61,9 +91,12 @@
   .login-card {
     max-width:420px; width:100%;
     padding:40px 32px;
-    background:var(--surface);
+    background:rgba(17,17,20,0.75);
+    backdrop-filter:blur(16px) saturate(140%);
+    -webkit-backdrop-filter:blur(16px) saturate(140%);
     border:1px solid var(--border);
     border-radius:var(--radius-lg);
+    animation:fadeInUp 0.5s ease-out;
   }
   .login-brand {
     display:inline-flex; align-items:center; gap:10px;
@@ -92,9 +125,10 @@
     background:var(--discord); color:#fff;
     border:none; border-radius:var(--radius);
     font-size:0.875rem; font-weight:600;
-    transition:background 0.15s ease;
+    transition:background 0.15s ease, transform 0.1s ease;
   }
   .discord-btn:hover { background:var(--discord-hover); }
+  .discord-btn:active { transform:scale(0.985); }
   .discord-btn svg { width:20px; height:20px; }
   .login-note {
     margin-top:20px; font-size:0.75rem; color:var(--text-3);
@@ -108,10 +142,11 @@
     height:56px;
     display:flex; align-items:center; justify-content:space-between;
     padding:0 20px;
-    background:rgba(10,10,11,0.85);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
+    background:rgba(10,10,11,0.72);
+    backdrop-filter:blur(16px) saturate(140%);
+    -webkit-backdrop-filter:blur(16px) saturate(140%);
     border-bottom:1px solid var(--border);
+    animation:slideDown 0.5s ease-out;
   }
   .brand {
     display:flex; align-items:center; gap:10px;
@@ -136,13 +171,14 @@
     font-size:0.78rem; font-weight:500;
     display:inline-flex; align-items:center; justify-content:center;
     gap:6px;
-    transition:all 0.12s ease;
+    transition:color 0.15s ease, border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   }
   .nav-btn:hover {
     color:var(--text);
     border-color:var(--border-strong);
     background:var(--surface);
   }
+  .nav-btn:active { transform:scale(0.96); }
   .nav-btn svg { width:14px; height:14px; }
   .nav-btn.admin {
     color:var(--accent);
@@ -178,6 +214,7 @@
   section.hero {
     padding:64px 24px 40px;
     text-align:center;
+    animation:fadeInUp 0.6s ease-out;
   }
   .hero-eyebrow {
     display:inline-flex; align-items:center; gap:8px;
@@ -188,11 +225,13 @@
     color:var(--text-2);
     margin-bottom:28px;
     font-family:var(--mono);
+    animation:fadeIn 0.8s ease-out;
   }
   .hero-eyebrow .dot {
     width:6px; height:6px; border-radius:50%;
     background:var(--accent);
     box-shadow:0 0 6px var(--accent);
+    animation:dotPulse 2s ease-in-out infinite;
   }
   h1.hero-title {
     font-size:clamp(1.75rem, 4.5vw, 2.75rem);
@@ -201,6 +240,7 @@
     line-height:1.15;
     margin-bottom:16px;
     color:var(--text);
+    animation:fadeInUp 0.6s ease-out 0.05s backwards;
   }
   .typewriter {
     display:inline-block; min-width:1ch;
@@ -215,19 +255,27 @@
     vertical-align:-0.08em;
     animation:blink 1s step-end infinite;
   }
-  @keyframes blink {
-    0%, 50% { opacity:1; } 51%, 100% { opacity:0; }
-  }
   .hero-sub {
     font-size:0.9rem;
     color:var(--text-2);
     max-width:520px;
     margin:0 auto 40px;
     line-height:1.65;
+    animation:fadeInUp 0.6s ease-out 0.1s backwards;
+  }
+  section.hero::after {
+    content:'';
+    display:block;
+    width:60px;
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--accent-border), transparent);
+    margin:48px auto 0;
+    animation:fadeIn 1.2s ease-out;
   }
 
   .search-container {
     max-width:600px; margin:0 auto;
+    animation:fadeInUp 0.6s ease-out 0.15s backwards;
   }
   .input-wrap {
     position:relative; margin-bottom:10px;
@@ -248,10 +296,13 @@
     border-radius:var(--radius);
     font-size:0.9rem;
     outline:none;
-    transition:border-color 0.15s ease;
+    transition:border-color 0.15s ease, box-shadow 0.2s ease;
   }
   input#target::placeholder { color:var(--text-3); }
-  input#target:focus { border-color:var(--accent-border); }
+  input#target:focus {
+    border-color:var(--accent-border);
+    box-shadow:0 0 0 3px rgba(0,196,106,0.08);
+  }
   .input-type-badge {
     position:absolute; right:40px; top:50%;
     transform:translateY(-50%);
@@ -288,9 +339,13 @@
     font-weight:600;
     letter-spacing:0.005em;
     display:flex; align-items:center; justify-content:center; gap:8px;
-    transition:background 0.15s ease;
+    transition:background 0.15s ease, transform 0.1s ease, box-shadow 0.2s ease;
   }
-  button.primary:hover:not(:disabled) { background:#00d977; }
+  button.primary:hover:not(:disabled) {
+    background:#00d977;
+    box-shadow:0 4px 20px rgba(0,196,106,0.25);
+  }
+  button.primary:active:not(:disabled) { transform:scale(0.985); }
   button.primary:disabled { opacity:0.5; cursor:default; }
   button.primary .spinner {
     display:none;
@@ -314,7 +369,7 @@
     font-size:0.8rem;
     font-weight:500;
     display:flex; align-items:center; justify-content:center; gap:8px;
-    transition:all 0.15s ease;
+    transition:color 0.15s ease, border-color 0.15s ease;
   }
   .filters-toggle:hover {
     color:var(--text);
@@ -333,10 +388,11 @@
   }
   .filters-panel {
     max-height:0; overflow:hidden;
-    transition:max-height 0.35s ease;
+    transition:max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+    opacity:0;
     margin-top:10px;
   }
-  .filters-panel.open { max-height:1400px; }
+  .filters-panel.open { max-height:1400px; opacity:1; }
   .filters-inner {
     background:var(--surface);
     border:1px solid var(--border);
@@ -374,10 +430,13 @@
     font-size:0.82rem;
     outline:none;
     width:100%;
-    transition:border-color 0.15s ease;
+    transition:border-color 0.15s ease, box-shadow 0.2s ease;
   }
   .filter-input::placeholder { color:var(--text-3); }
-  .filter-input:focus, .filter-select:focus { border-color:var(--accent-border); }
+  .filter-input:focus, .filter-select:focus {
+    border-color:var(--accent-border);
+    box-shadow:0 0 0 3px rgba(0,196,106,0.08);
+  }
   .filter-select {
     appearance:none; -webkit-appearance:none;
     cursor:pointer;
@@ -398,7 +457,7 @@
     background:transparent;
     border:1px solid var(--border);
     color:var(--text-2);
-    transition:all 0.15s ease;
+    transition:color 0.15s ease, border-color 0.15s ease;
   }
   .filter-btn:hover { color:var(--text); border-color:var(--border-strong); }
   .filter-btn svg { width:12px; height:12px; }
@@ -414,10 +473,21 @@
   }
   .stat {
     padding:18px 12px;
-    background:var(--surface);
+    background:rgba(17,17,20,0.7);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
     border:1px solid var(--border);
     border-radius:var(--radius);
     text-align:center;
+    animation:fadeInUp 0.5s ease-out backwards;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .stat:nth-child(1) { animation-delay:0.2s; }
+  .stat:nth-child(2) { animation-delay:0.3s; }
+  .stat:nth-child(3) { animation-delay:0.4s; }
+  .stat:hover {
+    border-color:var(--accent-border);
+    background:rgba(17,17,20,0.95);
   }
   .stat-value {
     font-family:var(--mono);
@@ -470,12 +540,22 @@
   }
   .feature-card {
     padding:22px;
-    background:var(--surface);
+    background:rgba(17,17,20,0.7);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
     border:1px solid var(--border);
     border-radius:var(--radius);
-    transition:border-color 0.15s ease;
+    animation:fadeInUp 0.5s ease-out backwards;
+    transition:border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
   }
-  .feature-card:hover { border-color:var(--border-strong); }
+  .feature-card:nth-child(1) { animation-delay:0.05s; }
+  .feature-card:nth-child(2) { animation-delay:0.15s; }
+  .feature-card:nth-child(3) { animation-delay:0.25s; }
+  .feature-card:hover {
+    border-color:var(--accent-border);
+    background:rgba(17,17,20,0.95);
+    transform:translateY(-2px);
+  }
   .feature-num {
     font-family:var(--mono);
     font-size:0.7rem;
@@ -498,6 +578,7 @@
     border-top:1px solid var(--border);
     padding:32px 24px;
     text-align:center;
+    animation:fadeIn 0.8s ease-out;
   }
   .footer-links {
     display:flex; justify-content:center; gap:24px;
@@ -507,14 +588,23 @@
     font-size:0.78rem;
     color:var(--text-2);
     cursor:pointer;
+    transition:color 0.15s ease, opacity 0.15s ease;
+    opacity:0.85;
   }
-  .footer-links a:hover { color:var(--text); text-decoration:none; }
+  .footer-links a:hover {
+    color:var(--text);
+    opacity:1;
+    text-decoration:none;
+  }
   .credits {
     font-size:0.75rem;
     color:var(--text-3);
     margin-bottom:6px;
   }
-  .credits strong { color:var(--text-2); font-weight:500; }
+  .credits strong {
+    color:var(--accent);
+    font-weight:600;
+  }
   .watermark {
     font-size:0.7rem;
     color:var(--text-3);
@@ -529,6 +619,7 @@
     text-align:center;
     margin-bottom:16px;
     font-family:var(--mono);
+    animation:fadeIn 0.3s ease-out;
   }
   .none {
     color:var(--text-2);
@@ -537,6 +628,7 @@
     padding:48px 20px;
     border:1px dashed var(--border);
     border-radius:var(--radius);
+    animation:fadeIn 0.4s ease-out;
   }
   .toolbar {
     display:none;
@@ -545,6 +637,7 @@
     margin-bottom:12px;
     flex-wrap:wrap;
     gap:8px;
+    animation:fadeIn 0.3s ease-out;
   }
   .toolbar.visible { display:flex; }
   .clear-all-btn {
@@ -555,7 +648,7 @@
     color:var(--text-2);
     font-size:0.75rem;
     display:inline-flex; align-items:center; gap:6px;
-    transition:all 0.15s ease;
+    transition:border-color 0.15s ease, color 0.15s ease;
   }
   .clear-all-btn:hover {
     border-color:rgba(229,72,77,0.5);
@@ -564,14 +657,28 @@
   .clear-all-btn svg { width:12px; height:12px; }
 
   .card {
-    background:var(--surface);
+    background:rgba(17,17,20,0.72);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
     border:1px solid var(--border);
     border-radius:var(--radius);
     padding:18px 20px;
     margin-bottom:10px;
-    transition:border-color 0.15s ease;
+    animation:fadeInUp 0.4s ease-out backwards;
+    transition:border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
   }
-  .card:hover { border-color:var(--border-strong); }
+  .card:hover {
+    border-color:var(--accent-border);
+    background:rgba(17,17,20,0.92);
+    transform:translateY(-1px);
+  }
+  .card:nth-child(1) { animation-delay:0.02s; }
+  .card:nth-child(2) { animation-delay:0.06s; }
+  .card:nth-child(3) { animation-delay:0.10s; }
+  .card:nth-child(4) { animation-delay:0.14s; }
+  .card:nth-child(5) { animation-delay:0.18s; }
+  .card:nth-child(6) { animation-delay:0.22s; }
+  .card:nth-child(n+7) { animation-delay:0.26s; }
   .card-header {
     display:flex;
     align-items:flex-start;
@@ -635,7 +742,7 @@
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
     opacity:0;
-    transition:opacity 0.15s, border-color 0.15s;
+    transition:opacity 0.15s ease, border-color 0.15s ease;
     flex-shrink:0;
   }
   .card:hover .copy-btn { opacity:1; }
@@ -652,12 +759,15 @@
     font-size:0.8rem;
     margin-top:12px;
     font-family:var(--mono);
+    animation:fadeIn 0.3s ease-out;
   }
 
   /* ===== MODALS ===== */
   .modal-overlay {
     position:fixed; inset:0;
-    background:rgba(0,0,0,0.7);
+    background:rgba(0,0,0,0.65);
+    backdrop-filter:blur(4px);
+    -webkit-backdrop-filter:blur(4px);
     z-index:200;
     display:flex; align-items:flex-start; justify-content:center;
     padding:56px 20px 40px;
@@ -667,13 +777,18 @@
   }
   .modal-overlay.open { opacity:1; pointer-events:auto; }
   .modal {
-    background:var(--surface);
+    background:rgba(17,17,20,0.96);
+    backdrop-filter:blur(20px) saturate(160%);
+    -webkit-backdrop-filter:blur(20px) saturate(160%);
     border:1px solid var(--border-strong);
     border-radius:var(--radius-lg);
     max-width:560px;
     width:100%;
     padding:24px;
     position:relative;
+  }
+  .modal-overlay.open .modal {
+    animation:fadeInUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .modal.wide { max-width:720px; }
   .modal-close {
@@ -685,7 +800,7 @@
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
     color:var(--text-3);
-    transition:all 0.15s ease;
+    transition:color 0.15s ease, border-color 0.15s ease;
   }
   .modal-close:hover { color:var(--text); border-color:var(--border-strong); }
   .modal-close svg { width:12px; height:12px; }
@@ -756,7 +871,7 @@
     font-size:0.8rem;
     font-weight:500;
     display:inline-flex; align-items:center; justify-content:center; gap:6px;
-    transition:all 0.15s ease;
+    transition:background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     flex:1;
   }
   .admin-btn.primary {
@@ -779,9 +894,13 @@
     background:var(--surface);
     text-align:center;
     cursor:pointer;
-    transition:all 0.15s ease;
+    transition:border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
   }
-  .drop-zone:hover { border-color:var(--accent-border); background:var(--accent-soft); }
+  .drop-zone:hover {
+    border-color:var(--accent-border);
+    background:var(--accent-soft);
+    transform:scale(1.005);
+  }
   .drop-zone.dragover { border-color:var(--accent); background:var(--accent-soft); }
   .drop-zone svg {
     width:28px; height:28px;
@@ -809,6 +928,7 @@
     border:1px solid var(--border);
     border-radius:var(--radius);
     font-size:0.78rem;
+    animation:fadeInUp 0.25s ease-out;
   }
   .file-item-info { flex:1; min-width:0; }
   .file-item-name {
@@ -829,7 +949,7 @@
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
     flex-shrink:0;
-    transition:all 0.15s ease;
+    transition:border-color 0.15s ease;
   }
   .file-item-remove:hover { border-color:rgba(229,72,77,0.5); }
   .file-item-remove svg { width:10px; height:10px; color:var(--text-3); }
@@ -861,6 +981,7 @@
     background:var(--surface-2);
     border:1px solid var(--border);
     border-radius:var(--radius);
+    animation:fadeInUp 0.25s ease-out;
   }
   .db-info { flex:1; min-width:0; }
   .db-name {
@@ -880,7 +1001,7 @@
     background:transparent;
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
-    transition:all 0.15s ease;
+    transition:border-color 0.15s ease;
     flex-shrink:0;
   }
   .db-delete:hover { border-color:rgba(229,72,77,0.5); }
@@ -897,24 +1018,19 @@
   }
   .toast {
     padding:11px 18px;
-    background:var(--surface);
+    background:rgba(17,17,20,0.95);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
     border:1px solid var(--border-strong);
     border-left:3px solid var(--accent);
     border-radius:var(--radius);
     color:var(--text);
     font-size:0.8rem;
     max-width:90vw;
-    animation:toastIn 0.25s ease;
+    animation:toastIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .toast.error { border-left-color:var(--danger); }
-  @keyframes toastIn {
-    from { opacity:0; transform:translateY(10px); }
-    to { opacity:1; transform:translateY(0); }
-  }
   .toast.leaving { animation:toastOut 0.2s ease forwards; }
-  @keyframes toastOut {
-    to { opacity:0; transform:translateY(10px); }
-  }
 
   /* ===== SCROLL TOP ===== */
   .scroll-top {
@@ -927,11 +1043,15 @@
     color:var(--text-2);
     display:flex; align-items:center; justify-content:center;
     opacity:0; pointer-events:none;
-    transition:opacity 0.2s, border-color 0.15s;
+    transition:opacity 0.2s ease, border-color 0.15s ease, box-shadow 0.2s ease;
     z-index:90;
   }
   .scroll-top.visible { opacity:1; pointer-events:auto; }
-  .scroll-top:hover { color:var(--text); border-color:var(--border-strong); }
+  .scroll-top:hover {
+    color:var(--text);
+    border-color:var(--border-strong);
+    box-shadow:0 4px 16px rgba(0,196,106,0.15);
+  }
   .scroll-top svg { width:16px; height:16px; }
 
   ::-webkit-scrollbar { width:8px; height:8px; }
@@ -1160,9 +1280,11 @@
   <footer>
     <div class="footer-links">
       <a id="aboutLink2">À propos</a>
+      <a id="cguLink">CGU</a>
+      <a id="mentionsLink">Mentions légales</a>
       <a id="logoutLink">Se déconnecter</a>
     </div>
-    <div class="credits">Développé par <strong>Nuhi</strong> et <strong>Silentlinux</strong></div>
+    <div class="credits">Développé par l'Équipe <strong>Seek It</strong></div>
     <div class="watermark">Seek It — 2026</div>
   </footer>
 </main>
@@ -1190,6 +1312,72 @@
       <button id="clearCacheBtn" style="width:100%;margin-top:12px;padding:11px;background:var(--danger-soft);border:1px solid rgba(229,72,77,0.35);color:var(--danger);border-radius:var(--radius);font-size:0.8rem;font-weight:500;">
         Vider le cache et les préférences
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CGU -->
+<div class="modal-overlay" id="cguModal">
+  <div class="modal">
+    <button class="modal-close" data-close="cguModal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="modal-title">Conditions Générales d'Utilisation</div>
+    <div class="modal-body">
+      <h3>1. Objet</h3>
+      <p>Seek It est un outil de recherche d'informations mises à disposition par les administrateurs du site. L'utilisateur est seul responsable de l'usage qu'il fait des données consultées.</p>
+
+      <h3>2. Accès au service</h3>
+      <p>L'accès à Seek It nécessite une authentification via Discord. En vous connectant, vous acceptez que votre identifiant Discord soit utilisé uniquement pour vérifier votre identité et votre niveau d'accès. Aucune autre donnée Discord n'est conservée.</p>
+
+      <h3>3. Utilisation interdite</h3>
+      <p>Toute utilisation à des fins de harcèlement, de doxxing, de chantage, d'usurpation d'identité ou d'atteinte à la vie privée est strictement interdite. Tout manquement entraîne un bannissement immédiat et définitif de la plateforme.</p>
+
+      <h3>4. Sources et exactitude</h3>
+      <p>Les données affichées proviennent de sources fournies par les administrateurs. Seek It ne garantit pas l'exactitude, la complétude ou la fraîcheur des informations. L'utilisateur doit vérifier toute information avant utilisation.</p>
+
+      <h3>5. Responsabilité</h3>
+      <p>Seek It et son équipe ne peuvent être tenus responsables de l'usage fait des données, ni des dommages directs ou indirects résultant de l'utilisation du service.</p>
+
+      <h3>6. Modification des CGU</h3>
+      <p>Ces conditions peuvent être modifiées à tout moment. La poursuite de l'utilisation du service vaut acceptation des nouvelles conditions.</p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MENTIONS LÉGALES -->
+<div class="modal-overlay" id="mentionsModal">
+  <div class="modal">
+    <button class="modal-close" data-close="mentionsModal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="modal-title">Mentions légales</div>
+    <div class="modal-body">
+      <h3>Éditeur</h3>
+      <p>Seek It — Plateforme de recherche d'informations.<br>
+      Équipe : Nuxi &amp; Silentlinux &amp; NetlyWeb.</p>
+
+      <h3>Hébergement</h3>
+      <p>Site hébergé sur l'infrastructure Vercel Inc.</p>
+
+      <h3>Propriété intellectuelle</h3>
+      <p>L'ensemble des éléments du site Seek It (structure, code, design) est la propriété exclusive de l'équipe Seek It. Toute reproduction sans autorisation est interdite.</p>
+
+      <h3>Données personnelles — RGPD</h3>
+      <p>Aucune donnée personnelle n'est stockée sur nos serveurs. L'authentification Discord est utilisée uniquement pour vérifier votre identité et est conservée localement dans votre navigateur (localStorage).</p>
+      <p>Conformément au RGPD (UE 2016/679), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour toute demande, contactez l'équipe Seek It sur notre <a href="https://discord.gg/Hrmh`FFtwN7" target="_blank">Discord</a></p>
+
+      <h3>Cookies et stockage local</h3>
+      <p>Aucun cookie tiers. Aucun pixel de tracking. Aucun outil d'analyse externe. Le site utilise uniquement le stockage local du navigateur (localStorage / IndexedDB) pour vos préférences et les données importées par les administrateurs.</p>
+
+      <h3>Contact</h3>
+      <p>Pour toute question relative aux mentions légales ou au RGPD, contactez un administrateur sur notre serveur Discord.</p>
     </div>
   </div>
 </div>
@@ -1297,8 +1485,8 @@
 /* ============================================================
    CONFIGURATION
    ============================================================ */
-const DISCORD_CLIENT_ID = "TON_CLIENT_ID_ICI";
-const DISCORD_REDIRECT  = "https://TON-PROJET.vercel.app/";
+const DISCORD_CLIENT_ID = "1553737753894850640";
+const DISCORD_REDIRECT  = "https://seekit2.vercel.app/";
 const ADMIN_DISCORD_IDS = [
   "1535798111799091250",
   "1454894309500256452"
@@ -1311,7 +1499,7 @@ const LS_DBS_LEGACY = "seekit-databases";
 const IDB_NAME = "seekit-db";
 const IDB_VERSION = 1;
 const IDB_STORE = "databases";
-const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 Mo
+const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 /* ===== INDEXEDDB ===== */
 let _idbPromise = null;
@@ -1358,7 +1546,7 @@ async function idbDelete(id) {
   });
 }
 
-/* ===== DATABASES CACHE ===== */
+/* ===== CACHE ===== */
 let _dbsCache = null;
 
 async function loadDatabasesAsync() {
@@ -1403,7 +1591,7 @@ async function migrateLegacyIfAny() {
   try { localStorage.removeItem(LS_DBS_LEGACY); } catch {}
 }
 
-/* ===== ULP — Universal Lookup Protocol ===== */
+/* ===== ULP ===== */
 const ULP = {
   built: false,
   tokens: new Map(),
@@ -1880,9 +2068,7 @@ function renderResults(items, t0) {
   items.forEach((item, i) => list.insertAdjacentHTML("beforeend", renderCard(item, i)));
   out.appendChild(list);
 
-  document.getElementById("clearAll").addEventListener("click", () => {
-    out.innerHTML = "";
-  });
+  document.getElementById("clearAll").addEventListener("click", () => { out.innerHTML = ""; });
 
   list.querySelectorAll(".copy-btn").forEach(btn => {
     btn.addEventListener("click", async e => {
@@ -1909,6 +2095,9 @@ document.getElementById("userChip").addEventListener("click", () => {
 document.getElementById("settingsToggle").addEventListener("click", () => openModal("settingsModal"));
 document.getElementById("aboutLink").addEventListener("click", () => openModal("aboutModal"));
 document.getElementById("aboutLink2").addEventListener("click", () => openModal("aboutModal"));
+document.getElementById("cguLink").addEventListener("click", () => openModal("cguModal"));
+document.getElementById("mentionsLink").addEventListener("click", () => openModal("mentionsModal"));
+
 document.getElementById("adminBtn").addEventListener("click", async () => {
   await loadDatabasesAsync();
   renderAdminDbList();
@@ -2308,15 +2497,9 @@ document.getElementById("adminAddBtn").addEventListener("click", async () => {
 });
 
 /* ===== TYPEWRITER ===== */
-/* ===== TYPEWRITER ===== */
 (function typewriter() {
   const el = document.getElementById("typewriter");
   if (!el) return;
-
-  // Chaque entrée a son préfixe correct grammaticalement :
-  // "d'un" pour masculin, "d'une" pour féminin.
-  // Le préfixe + le mot sont effacés ET réécrits ensemble,
-  // donc pas de faute d'orthographe pendant l'animation.
   const phrases = [
     "d'un prénom",
     "d'un nom",
@@ -2325,7 +2508,6 @@ document.getElementById("adminAddBtn").addEventListener("click", async () => {
     "d'une ville",
     "d'un pays"
   ];
-
   let phraseIdx = 0;
   let charIdx = 0;
   let deleting = false;
@@ -2335,16 +2517,14 @@ document.getElementById("adminAddBtn").addEventListener("click", async () => {
     const shown = cur.slice(0, charIdx);
     el.innerHTML = `${shown}<span class="cursor"></span>`;
   }
-
   function tick() {
     const cur = phrases[phraseIdx];
-
     if (!deleting) {
       charIdx++;
       render();
       if (charIdx >= cur.length) {
         deleting = true;
-        setTimeout(tick, 1600); // pause mot complet
+        setTimeout(tick, 1600);
         return;
       }
       setTimeout(tick, 70);
@@ -2360,7 +2540,6 @@ document.getElementById("adminAddBtn").addEventListener("click", async () => {
       setTimeout(tick, 35);
     }
   }
-
   setTimeout(tick, 600);
 })();
 
