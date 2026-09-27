@@ -172,11 +172,13 @@
     display:inline-flex; align-items:center; justify-content:center;
     gap:6px;
     transition:color 0.15s ease, border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    text-decoration:none;
   }
   .nav-btn:hover {
     color:var(--text);
     border-color:var(--border-strong);
     background:var(--surface);
+    text-decoration:none;
   }
   .nav-btn:active { transform:scale(0.96); }
   .nav-btn svg { width:14px; height:14px; }
@@ -186,6 +188,12 @@
     background:var(--accent-soft);
   }
   .nav-btn.admin:hover { background:rgba(0,196,106,0.16); }
+  .nav-btn.discord {
+    color:var(--accent);
+    border-color:var(--accent-border);
+    background:var(--accent-soft);
+  }
+  .nav-btn.discord:hover { background:rgba(0,196,106,0.16); color:var(--accent); }
   .user-chip {
     display:flex; align-items:center; gap:8px;
     padding:3px 10px 3px 3px;
@@ -595,6 +603,10 @@
     color:var(--text);
     opacity:1;
     text-decoration:none;
+  }
+  .footer-links a.discord {
+    color:var(--accent);
+    font-weight:500;
   }
   .credits {
     font-size:0.75rem;
@@ -1121,6 +1133,7 @@
       </svg>
     </button>
     <button class="nav-btn admin" id="adminBtn" style="display:none;">Admin</button>
+    <a class="nav-btn discord" href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">Discord</a>
     <button class="nav-btn hide-mobile" id="aboutLink">À propos</button>
     <button class="user-chip" id="userChip" style="display:none;">
       <img id="userAvatar" src="" alt="">
@@ -1281,10 +1294,11 @@
     <div class="footer-links">
       <a id="aboutLink2">À propos</a>
       <a id="mentionsLink">Mentions légales</a>
+      <a href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer" class="discord">Discord</a>
       <a id="logoutLink">Se déconnecter</a>
     </div>
     <div class="credits">Développé par l'Équipe <strong>Seek It</strong></div>
-    <div class="watermark">Seek It Copyright 2026 - Tous droit reservés</div>
+    <div class="watermark">Seek It Copyright 2026 - Tous droits réservés</div>
   </footer>
 </main>
 
@@ -1338,7 +1352,7 @@
 
       <h3>Données personnelles — RGPD</h3>
       <p>Aucune donnée personnelle n'est stockée sur nos serveurs. L'authentification Discord est utilisée uniquement pour vérifier votre identité et est conservée localement dans votre navigateur (localStorage).</p>
-      <p>Conformément au RGPD (UE 2016/679), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour toute demande, contactez l'équipe Seek It sur notre <a href="https://discord.gg/Hrmh`FFtwN7" target="_blank">Discord</a></p>
+      <p>Conformément au RGPD (UE 2016/679), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour toute demande, contactez l'équipe Seek It sur notre <a href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">Discord</a>.</p>
 
       <h3>Cookies et stockage local</h3>
       <p>Aucun cookie tiers. Aucun pixel de tracking. Aucun outil d'analyse externe. Le site utilise uniquement le stockage local du navigateur (localStorage / IndexedDB) pour vos préférences et les données importées par les administrateurs.</p>
@@ -1371,6 +1385,8 @@
       <p>Les entrées sont indexées localement dans votre navigateur. Cet index permet des recherches quasi-instantanées même sur de gros volumes.</p>
       <h3>Confidentialité</h3>
       <p>Aucune donnée n'est envoyée sur un serveur. Tout le traitement se fait dans votre navigateur.</p>
+      <h3>Support</h3>
+      <p>Rejoignez notre serveur Discord : <a href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">discord.gg/HrmhFFtwN7</a></p>
     </div>
   </div>
 </div>
@@ -2062,7 +2078,6 @@ document.getElementById("userChip").addEventListener("click", () => {
 document.getElementById("settingsToggle").addEventListener("click", () => openModal("settingsModal"));
 document.getElementById("aboutLink").addEventListener("click", () => openModal("aboutModal"));
 document.getElementById("aboutLink2").addEventListener("click", () => openModal("aboutModal"));
-document.getElementById("cguLink").addEventListener("click", () => openModal("cguModal"));
 document.getElementById("mentionsLink").addEventListener("click", () => openModal("mentionsModal"));
 
 document.getElementById("adminBtn").addEventListener("click", async () => {
