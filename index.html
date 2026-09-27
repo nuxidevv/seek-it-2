@@ -154,6 +154,13 @@
   .brand {
     display:flex; align-items:center; gap:10px;
     font-weight:700; font-size:0.9rem; letter-spacing:-0.01em;
+    transition:opacity 0.15s ease;
+  }
+  .brand.admin-clickable {
+    cursor:pointer;
+  }
+  .brand.admin-clickable:hover {
+    opacity:0.75;
   }
   .brand-mark {
     width:24px; height:24px;
@@ -185,12 +192,6 @@
   }
   .nav-btn:active { transform:scale(0.96); }
   .nav-btn svg { width:14px; height:14px; }
-  .nav-btn.admin {
-    color:var(--accent);
-    border-color:var(--accent-border);
-    background:var(--accent-soft);
-  }
-  .nav-btn.admin:hover { background:rgba(0,196,106,0.16); }
   .nav-btn.discord {
     color:var(--accent);
     border-color:var(--accent-border);
@@ -1108,7 +1109,7 @@
 
 <!-- ===== NAV ===== -->
 <nav class="topbar" id="topbar" style="display:none;">
-  <div class="brand">
+  <div class="brand" id="brandLogo">
     <div class="brand-mark">S</div>
     <span>Seek It</span>
   </div>
@@ -1125,7 +1126,6 @@
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
       </svg>
     </button>
-    <button class="nav-btn admin" id="adminBtn" style="display:none;">Admin</button>
     <a class="nav-btn discord" href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">Discord</a>
     <button class="nav-btn hide-mobile" id="aboutLink">À propos</button>
     <button class="user-chip" id="userChip" style="display:none;">
@@ -1789,7 +1789,8 @@ async function showMain(user) {
   document.getElementById("userName").textContent = user.global_name || user.username;
 
   if (ADMIN_DISCORD_IDS.map(String).includes(String(user.id))) {
-    document.getElementById("adminBtn").style.display = "inline-flex";
+    document.getElementById("brandLogo").classList.add("admin-clickable");
+    document.getElementById("brandLogo").title = "Ouvrir le panel admin";
   }
 
   await migrateLegacyIfAny();
@@ -2053,7 +2054,10 @@ document.getElementById("aboutLink").addEventListener("click", () => openModal("
 document.getElementById("aboutLink2").addEventListener("click", () => openModal("aboutModal"));
 document.getElementById("mentionsLink").addEventListener("click", () => openModal("mentionsModal"));
 
-document.getElementById("adminBtn").addEventListener("click", async () => {
+document.getElementById("brandLogo").addEventListener("click", async () => {
+  const stored = getStoredUser();
+  if (!stored) return;
+  if (!ADMIN_DISCORD_IDS.map(String).includes(String(stored.id))) return;
   await loadDatabasesAsync();
   renderAdminDbList();
   openModal("adminModal");
