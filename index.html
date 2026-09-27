@@ -45,7 +45,7 @@
   }
   body.modal-open { overflow:hidden; }
 
-  /* ===== ANIMATIONS & TRANSPARENCE ===== */
+  /* ===== ANIMATIONS ===== */
   @keyframes fadeInUp {
     from { opacity:0; transform:translateY(12px); }
     to { opacity:1; transform:translateY(0); }
@@ -73,6 +73,7 @@
   @keyframes toastOut {
     to { opacity:0; transform:translateY(10px); }
   }
+  @keyframes spin { to { transform:rotate(360deg); } }
 
   a { color:var(--accent); text-decoration:none; }
   a:hover { text-decoration:underline; }
@@ -364,7 +365,6 @@
     animation:spin 0.65s linear infinite;
   }
   button.primary.loading .spinner { display:inline-block; }
-  @keyframes spin { to { transform:rotate(360deg); } }
 
   .filters-toggle {
     width:100%;
@@ -854,8 +854,7 @@
     font-weight:500;
     color:var(--text-2);
   }
-  .admin-form-row input,
-  .admin-form-row textarea {
+  .admin-form-row input {
     background:var(--surface);
     border:1px solid var(--border);
     color:var(--text);
@@ -866,16 +865,8 @@
     width:100%;
     transition:border-color 0.15s ease;
   }
-  .admin-form-row input::placeholder,
-  .admin-form-row textarea::placeholder { color:var(--text-3); }
-  .admin-form-row input:focus,
-  .admin-form-row textarea:focus { border-color:var(--accent-border); }
-  .admin-form-row textarea {
-    min-height:130px;
-    font-family:var(--mono);
-    font-size:0.75rem;
-    resize:vertical;
-  }
+  .admin-form-row input::placeholder { color:var(--text-3); }
+  .admin-form-row input:focus { border-color:var(--accent-border); }
   .admin-form-actions { display:flex; gap:8px; }
   .admin-btn {
     padding:10px 16px;
@@ -1435,26 +1426,6 @@
           csv : avec en-tête (prenom, nom_famille, email, telephone, ville, code_postal...)<br>
           txt / log : une entrée par ligne, séparateurs <code>:</code> <code>|</code> <code>;</code><br>
           sql : extraction automatique des tuples <code>('Jean','Dupont',...)</code>
-        </div>
-      </div>
-
-      <h3>Ajouter manuellement (JSON)</h3>
-      <div class="admin-form">
-        <div class="admin-form-row">
-          <textarea id="adminDbData" placeholder='[
-  {
-    "prenom": "Jean",
-    "nom_famille": "Dupont",
-    "email": "jean.dupont@example.com",
-    "telephone": "0612345678",
-    "ville": "Paris",
-    "code_postal": "75001"
-  }
-]'></textarea>
-        </div>
-        <div class="admin-form-actions">
-          <button class="admin-btn secondary" id="adminFormatBtn" type="button">Formater</button>
-          <button class="admin-btn primary" id="adminAddBtn" type="button">Ajouter</button>
         </div>
       </div>
 
@@ -2172,7 +2143,7 @@ async function renderAdminDbList() {
   const list = document.getElementById("adminDbList");
   document.getElementById("adminDbCount").textContent = dbs.length;
   if (dbs.length === 0) {
-    list.innerHTML = `<div class="admin-hint">Aucune source. Importez un fichier ou collez du JSON.</div>`;
+    list.innerHTML = `<div class="admin-hint">Aucune source. Importez un fichier.</div>`;
     return;
   }
   list.innerHTML = dbs.map(db => `
@@ -2364,9 +2335,9 @@ function renderFileList() {
         <div class="file-item-meta">${(f.size / 1024 / 1024).toFixed(2)} Mo · ${f.entries.length} entrées</div>
       </div>
       <div class="file-item-remove" data-idx="${i}" title="Retirer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"></" stroke-linelinecap="round" stroke-linejoin="round>
+">
+          <line x1="18" y1="6" x2="6" y2="18          <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </div>
     </div>
@@ -2442,39 +2413,6 @@ document.getElementById("adminUploadBtn").addEventListener("click", async () => 
   } catch (e) {
     console.error(e);
     toast("Erreur import : " + e.message, "error", 5000);
-  }
-});
-
-/* ===== ADMIN JSON ===== */
-document.getElementById("adminFormatBtn").addEventListener("click", () => {
-  const ta = document.getElementById("adminDbData");
-  try {
-    ta.value = JSON.stringify(JSON.parse(ta.value), null, 2);
-    toast("JSON formaté");
-  } catch (e) {
-    toast("JSON invalide : " + e.message, "error");
-  }
-});
-document.getElementById("adminAddBtn").addEventListener("click", async () => {
-  const name = document.getElementById("adminDbName").value.trim() || "Import manuel";
-  const data = document.getElementById("adminDbData").value.trim();
-  if (!data) { toast("Collez des données JSON", "error"); return; }
-  let parsed;
-  try { parsed = JSON.parse(data); }
-  catch (e) { toast("JSON invalide : " + e.message, "error"); return; }
-  if (!Array.isArray(parsed)) { toast("Le JSON doit être un tableau", "error"); return; }
-  const entries = parsed.map(normalizeEntry);
-  try {
-    await addDatabase({ name, entries, source:"JSON manuel", ts: Date.now() });
-    document.getElementById("adminDbName").value = "";
-    document.getElementById("adminDbData").value = "";
-    await renderAdminDbList();
-    refreshStats();
-    toast(`${entries.length} entrées ajoutées`);
-    playSound("ding");
-  } catch (e) {
-    console.error(e);
-    toast("Erreur ajout : " + e.message, "error", 5000);
   }
 });
 
