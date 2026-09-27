@@ -6,7 +6,7 @@
 <title>Seek It</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   :root {
@@ -27,17 +27,19 @@
     --info:#4d8fdb;
     --discord:#5865F2;
     --discord-hover:#4752c4;
-    --radius:8px;
-    --radius-lg:12px;
-    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --radius:14px;
+    --radius-lg:20px;
+    --radius-pill:100px;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
   }
   html, body { height:100%; }
   body {
     background:var(--bg);
     color:var(--text);
-    font-family:'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-family:'Poppins', -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-size:14px;
     line-height:1.5;
+    letter-spacing:-0.005em;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
     overflow-x:hidden;
@@ -96,7 +98,7 @@
     backdrop-filter:blur(16px) saturate(140%);
     -webkit-backdrop-filter:blur(16px) saturate(140%);
     border:1px solid var(--border);
-    border-radius:var(--radius-lg);
+    border-radius:24px;
     animation:fadeInUp 0.5s ease-out;
   }
   .login-brand {
@@ -107,7 +109,7 @@
   .login-brand-mark {
     width:28px; height:28px;
     border:1.5px solid var(--accent);
-    border-radius:6px;
+    border-radius:9px;
     display:flex; align-items:center; justify-content:center;
     color:var(--accent);
     font-family:var(--mono); font-weight:600; font-size:13px;
@@ -122,9 +124,9 @@
   }
   .discord-btn {
     display:flex; align-items:center; justify-content:center; gap:10px;
-    width:100%; padding:13px 20px;
+    width:100%; padding:14px 20px;
     background:var(--discord); color:#fff;
-    border:none; border-radius:var(--radius);
+    border:none; border-radius:var(--radius-pill);
     font-size:0.875rem; font-weight:600;
     transition:background 0.15s ease, transform 0.1s ease;
   }
@@ -156,7 +158,7 @@
   .brand-mark {
     width:24px; height:24px;
     border:1.5px solid var(--accent);
-    border-radius:5px;
+    border-radius:8px;
     display:flex; align-items:center; justify-content:center;
     color:var(--accent);
     font-family:var(--mono); font-weight:600; font-size:11px;
@@ -164,10 +166,10 @@
   .nav-actions { display:flex; gap:6px; align-items:center; }
   .nav-btn {
     height:32px; min-width:32px;
-    padding:0 10px;
+    padding:0 12px;
     background:transparent;
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:var(--radius-pill);
     color:var(--text-2);
     font-size:0.78rem; font-weight:500;
     display:inline-flex; align-items:center; justify-content:center;
@@ -197,10 +199,10 @@
   .nav-btn.discord:hover { background:rgba(0,196,106,0.16); color:var(--accent); }
   .user-chip {
     display:flex; align-items:center; gap:8px;
-    padding:3px 10px 3px 3px;
+    padding:3px 12px 3px 3px;
     background:transparent;
     border:1px solid var(--border);
-    border-radius:100px;
+    border-radius:var(--radius-pill);
     cursor:pointer;
     transition:border-color 0.15s ease;
   }
@@ -227,9 +229,9 @@
   }
   .hero-eyebrow {
     display:inline-flex; align-items:center; gap:8px;
-    padding:5px 12px;
+    padding:6px 14px;
     border:1px solid var(--border);
-    border-radius:100px;
+    border-radius:var(--radius-pill);
     font-size:0.7rem;
     color:var(--text-2);
     margin-bottom:28px;
@@ -290,7 +292,7 @@
     position:relative; margin-bottom:10px;
   }
   .input-wrap .input-icon {
-    position:absolute; left:14px; top:50%;
+    position:absolute; left:18px; top:50%;
     transform:translateY(-50%);
     width:16px; height:16px;
     color:var(--text-3);
@@ -301,8 +303,8 @@
     background:var(--surface);
     border:1px solid var(--border);
     color:var(--text);
-    padding:14px 100px 14px 42px;
-    border-radius:var(--radius);
+    padding:14px 100px 14px 46px;
+    border-radius:var(--radius-pill);
     font-size:0.9rem;
     outline:none;
     transition:border-color 0.15s ease, box-shadow 0.2s ease;
@@ -313,7 +315,7 @@
     box-shadow:0 0 0 3px rgba(0,196,106,0.08);
   }
   .input-type-badge {
-    position:absolute; right:40px; top:50%;
+    position:absolute; right:46px; top:50%;
     transform:translateY(-50%);
     font-size:0.6rem; font-weight:600;
     letter-spacing:0.08em; text-transform:uppercase;
@@ -324,10 +326,10 @@
   }
   .input-type-badge.visible { display:inline-block; }
   .input-clear {
-    position:absolute; right:12px; top:50%;
+    position:absolute; right:16px; top:50%;
     transform:translateY(-50%);
-    width:20px; height:20px;
-    border-radius:5px;
+    width:22px; height:22px;
+    border-radius:50%;
     background:transparent;
     border:1px solid var(--border);
     display:none; align-items:center; justify-content:center;
@@ -343,7 +345,7 @@
     background:var(--accent);
     color:#08120c;
     border:none;
-    border-radius:var(--radius);
+    border-radius:var(--radius-pill);
     font-size:0.875rem;
     font-weight:600;
     letter-spacing:0.005em;
@@ -369,10 +371,10 @@
   .filters-toggle {
     width:100%;
     margin-top:10px;
-    padding:11px 16px;
+    padding:12px 20px;
     background:var(--surface);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:var(--radius-pill);
     color:var(--text-2);
     font-size:0.8rem;
     font-weight:500;
@@ -389,7 +391,7 @@
     display:inline-flex; align-items:center; justify-content:center;
     min-width:18px; height:18px;
     padding:0 5px;
-    border-radius:100px;
+    border-radius:var(--radius-pill);
     background:var(--accent); color:#08120c;
     font-size:0.65rem; font-weight:700;
     font-family:var(--mono);
@@ -404,7 +406,7 @@
   .filters-inner {
     background:var(--surface);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:18px;
     padding:20px;
     display:flex; flex-direction:column; gap:16px;
   }
@@ -433,8 +435,8 @@
     background:var(--bg);
     border:1px solid var(--border);
     color:var(--text);
-    padding:9px 12px;
-    border-radius:var(--radius);
+    padding:10px 14px;
+    border-radius:12px;
     font-size:0.82rem;
     outline:none;
     width:100%;
@@ -458,8 +460,8 @@
   .filters-actions { display:flex; gap:8px; margin-top:4px; }
   .filter-btn {
     flex:1;
-    padding:9px 14px;
-    border-radius:var(--radius);
+    padding:10px 14px;
+    border-radius:var(--radius-pill);
     font-size:0.8rem; font-weight:500;
     display:flex; align-items:center; justify-content:center; gap:6px;
     background:transparent;
@@ -485,7 +487,7 @@
     backdrop-filter:blur(8px);
     -webkit-backdrop-filter:blur(8px);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:18px;
     text-align:center;
     animation:fadeInUp 0.5s ease-out backwards;
     transition:border-color 0.2s ease, background 0.2s ease;
@@ -552,7 +554,7 @@
     backdrop-filter:blur(8px);
     -webkit-backdrop-filter:blur(8px);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:18px;
     animation:fadeInUp 0.5s ease-out backwards;
     transition:border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
   }
@@ -639,7 +641,7 @@
     text-align:center;
     padding:48px 20px;
     border:1px dashed var(--border);
-    border-radius:var(--radius);
+    border-radius:18px;
     animation:fadeIn 0.4s ease-out;
   }
   .toolbar {
@@ -653,10 +655,10 @@
   }
   .toolbar.visible { display:flex; }
   .clear-all-btn {
-    padding:8px 14px;
+    padding:8px 16px;
     background:transparent;
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:var(--radius-pill);
     color:var(--text-2);
     font-size:0.75rem;
     display:inline-flex; align-items:center; gap:6px;
@@ -673,7 +675,7 @@
     backdrop-filter:blur(10px);
     -webkit-backdrop-filter:blur(10px);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:18px;
     padding:18px 20px;
     margin-bottom:10px;
     animation:fadeInUp 0.4s ease-out backwards;
@@ -701,7 +703,7 @@
   }
   .card-avatar {
     width:36px; height:36px;
-    border-radius:6px;
+    border-radius:50%;
     background:var(--surface-2);
     border:1px solid var(--border-strong);
     display:flex; align-items:center; justify-content:center;
@@ -749,7 +751,7 @@
   .row-value.mono .val-text { font-family:var(--mono); font-size:0.78rem; }
   .copy-btn {
     width:22px; height:22px;
-    border-radius:5px;
+    border-radius:50%;
     background:transparent;
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
@@ -766,7 +768,7 @@
     padding:14px 16px;
     background:var(--danger-soft);
     border:1px solid rgba(229,72,77,0.35);
-    border-radius:var(--radius);
+    border-radius:14px;
     color:var(--danger);
     font-size:0.8rem;
     margin-top:12px;
@@ -793,7 +795,7 @@
     backdrop-filter:blur(20px) saturate(160%);
     -webkit-backdrop-filter:blur(20px) saturate(160%);
     border:1px solid var(--border-strong);
-    border-radius:var(--radius-lg);
+    border-radius:22px;
     max-width:560px;
     width:100%;
     padding:24px;
@@ -807,7 +809,7 @@
     position:absolute;
     top:14px; right:14px;
     width:28px; height:28px;
-    border-radius:6px;
+    border-radius:50%;
     background:transparent;
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
@@ -844,7 +846,7 @@
     padding:16px;
     background:var(--bg);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:18px;
     display:flex; flex-direction:column; gap:12px;
     margin-bottom:20px;
   }
@@ -858,8 +860,8 @@
     background:var(--surface);
     border:1px solid var(--border);
     color:var(--text);
-    padding:10px 12px;
-    border-radius:var(--radius);
+    padding:10px 14px;
+    border-radius:var(--radius-pill);
     font-size:0.82rem;
     outline:none;
     width:100%;
@@ -869,8 +871,8 @@
   .admin-form-row input:focus { border-color:var(--accent-border); }
   .admin-form-actions { display:flex; gap:8px; }
   .admin-btn {
-    padding:10px 16px;
-    border-radius:var(--radius);
+    padding:10px 18px;
+    border-radius:var(--radius-pill);
     font-size:0.8rem;
     font-weight:500;
     display:inline-flex; align-items:center; justify-content:center; gap:6px;
@@ -893,7 +895,7 @@
   .drop-zone {
     padding:28px 20px;
     border:1.5px dashed var(--border-strong);
-    border-radius:var(--radius);
+    border-radius:18px;
     background:var(--surface);
     text-align:center;
     cursor:pointer;
@@ -929,7 +931,7 @@
     padding:9px 12px;
     background:var(--surface-2);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:12px;
     font-size:0.78rem;
     animation:fadeInUp 0.25s ease-out;
   }
@@ -947,7 +949,7 @@
   }
   .file-item-remove {
     width:22px; height:22px;
-    border-radius:5px;
+    border-radius:50%;
     background:transparent;
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
@@ -959,10 +961,10 @@
   .file-item-remove:hover svg { color:var(--danger); }
 
   .admin-hint {
-    padding:10px 12px;
+    padding:12px 14px;
     background:var(--surface-2);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:12px;
     font-size:0.72rem;
     color:var(--text-2);
     line-height:1.7;
@@ -971,7 +973,7 @@
   .admin-hint code {
     background:rgba(255,255,255,0.05);
     padding:1px 5px;
-    border-radius:3px;
+    border-radius:4px;
     color:var(--accent);
     font-size:0.7rem;
   }
@@ -983,7 +985,7 @@
     padding:12px 14px;
     background:var(--surface-2);
     border:1px solid var(--border);
-    border-radius:var(--radius);
+    border-radius:14px;
     animation:fadeInUp 0.25s ease-out;
   }
   .db-info { flex:1; min-width:0; }
@@ -1000,7 +1002,7 @@
   }
   .db-delete {
     width:26px; height:26px;
-    border-radius:5px;
+    border-radius:50%;
     background:transparent;
     border:1px solid var(--border);
     display:flex; align-items:center; justify-content:center;
@@ -1026,7 +1028,7 @@
     -webkit-backdrop-filter:blur(12px);
     border:1px solid var(--border-strong);
     border-left:3px solid var(--accent);
-    border-radius:var(--radius);
+    border-radius:14px;
     color:var(--text);
     font-size:0.8rem;
     max-width:90vw;
@@ -1040,7 +1042,7 @@
     position:fixed;
     bottom:24px; right:24px;
     width:38px; height:38px;
-    border-radius:var(--radius);
+    border-radius:50%;
     background:var(--surface);
     border:1px solid var(--border);
     color:var(--text-2);
@@ -1313,7 +1315,7 @@
     <div class="modal-title">Paramètres</div>
     <div class="modal-body">
       <p>Les préférences sont enregistrées dans votre navigateur.</p>
-      <button id="clearCacheBtn" style="width:100%;margin-top:12px;padding:11px;background:var(--danger-soft);border:1px solid rgba(229,72,77,0.35);color:var(--danger);border-radius:var(--radius);font-size:0.8rem;font-weight:500;">
+      <button id="clearCacheBtn" style="width:100%;margin-top:12px;padding:11px;background:var(--danger-soft);border:1px solid rgba(229,72,77,0.35);color:var(--danger);border-radius:var(--radius-pill);font-size:0.8rem;font-weight:500;">
         Vider le cache et les préférences
       </button>
     </div>
@@ -2335,9 +2337,9 @@ function renderFileList() {
         <div class="file-item-meta">${(f.size / 1024 / 1024).toFixed(2)} Mo · ${f.entries.length} entrées</div>
       </div>
       <div class="file-item-remove" data-idx="${i}" title="Retirer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"></" stroke-linelinecap="round" stroke-linejoin="round>
-">
-          <line x1="18" y1="6" x2="6" y2="18          <line x1="6" y1="6" x2="18" y2="18"></line>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </div>
     </div>
