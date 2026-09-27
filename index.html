@@ -3,615 +3,530 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Seek It — Investiguer un numéro</title>
-<meta name="description" content="Seek It — recherche approfondie sur un numéro de téléphone : opérateur, statut, localisation, entités liées.">
+<title>Seek It — Moteur de Recherche</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    background:#060607;color:#e8e8ec;
-    font-family:'Inter',-apple-system,sans-serif;
-    min-height:100vh;
-    overflow:hidden;
-    position:relative;
-    -webkit-font-smoothing:antialiased;
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: #060607;
+  color: #e8e8ec;
+  font-family: 'Inter', -apple-system, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: -320px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150%;
+  max-width: 1400px;
+  height: 900px;
+  background: radial-gradient(ellipse at center, rgba(255, 55, 55, 0.22) 0%, rgba(255, 30, 30, 0.08) 35%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(40px);
+}
+
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  perspective: 1200px;
+}
+
+.grid-floor {
+  position: absolute;
+  bottom: -10%;
+  left: 50%;
+  width: 200%;
+  height: 60%;
+  transform: translateX(-50%) perspective(500px) rotateX(65deg);
+  transform-origin: center bottom;
+  background-image:
+    linear-gradient(rgba(255, 60, 60, 0.18) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 60, 60, 0.18) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center bottom, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center bottom, black 20%, transparent 70%);
+  animation: gridScroll 12s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes gridScroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 60px; }
+}
+
+.ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 420px;
+  height: 420px;
+  margin: -210px 0 0 -210px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 80, 80, 0.18);
+  transform-style: preserve-3d;
+  animation: ringSpin 22s linear infinite;
+}
+
+.ring:nth-of-type(2) {
+  width: 560px;
+  height: 560px;
+  margin: -280px 0 0 -280px;
+  border-color: rgba(255, 80, 80, 0.10);
+  animation-duration: 32s;
+  animation-direction: reverse;
+}
+
+.ring:nth-of-type(3) {
+  width: 700px;
+  height: 700px;
+  margin: -350px 0 0 -350px;
+  border-color: rgba(255, 80, 80, 0.06);
+  animation-duration: 48s;
+}
+
+@keyframes ringSpin {
+  0% { transform: rotateX(72deg) rotateZ(0deg); }
+  100% { transform: rotateX(72deg) rotateZ(360deg); }
+}
+
+/* === ÉTATS D'AFFICHAGE === */
+.screen { display: none; position: relative; z-index: 2; }
+.screen.active { display: flex; }
+
+#loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  flex-direction: column;
+}
+
+#searchScreen, #adminScreen {
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 40px 24px;
+}
+
+.login-wrap {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.logo {
+  width: 104px;
+  height: 104px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #ffffff 0%, #cfcfd4 60%, #9a9aa2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 40px;
+  box-shadow:
+    0 0 60px rgba(255, 60, 60, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.10) inset,
+    0 30px 50px -20px rgba(0, 0, 0, 0.8);
+}
+
+.logo svg {
+  width: 52px;
+  height: 52px;
+  color: #08080a;
+}
+
+h1 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: clamp(2.2rem, 7vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  color: #ffffff;
+  margin-bottom: 22px;
+}
+
+h1 .accent {
+  color: #ff5a5a;
+}
+
+.desc {
+  font-size: 0.95rem;
+  color: #8f8f99;
+  line-height: 1.65;
+  margin-bottom: 40px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #c9c9d1;
+  margin-bottom: 8px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e8e8ec;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 80, 80, 0.4);
+  box-shadow: 0 0 12px rgba(255, 60, 60, 0.15);
+}
+
+.btn {
+  padding: 14px 32px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-discord {
+  width: 100%;
+  background: linear-gradient(135deg, #5865f2 0%, #4752c4 100%);
+  color: white;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-discord:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(88, 101, 242, 0.3);
+}
+
+.btn-admin {
+  background: rgba(255, 80, 80, 0.2);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  color: #ff8888;
+}
+
+.btn-admin:hover {
+  background: rgba(255, 80, 80, 0.3);
+  border-color: rgba(255, 80, 80, 0.5);
+}
+
+.btn-logout {
+  background: rgba(100, 100, 110, 0.2);
+  border: 1px solid rgba(100, 100, 110, 0.3);
+  color: #a0a0aa;
+}
+
+.btn-logout:hover {
+  background: rgba(100, 100, 110, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e8e8ec;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* === SEARCH INTERFACE === */
+.search-container {
+  max-width: 900px;
+  margin: 0 auto 40px;
+}
+
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.search-header h2 {
+  font-size: 2rem;
+  color: white;
+}
+
+.search-box {
+  width: 100%;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: #e8e8ec;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  transition: all 0.3s;
+}
+
+.search-box:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 80, 80, 0.4);
+  box-shadow: 0 0 12px rgba(255, 60, 60, 0.15);
+}
+
+.filters-toggle {
+  background: rgba(255, 80, 80, 0.15);
+  border: 1px solid rgba(255, 80, 80, 0.3);
+  color: #ff8888;
+  cursor: pointer;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.filters-toggle:hover {
+  background: rgba(255, 80, 80, 0.25);
+}
+
+.filters-panel {
+  display: none;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.filters-panel.open {
+  display: grid;
+}
+
+.filter-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #8f8f99;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.filter-field input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #e8e8ec;
+  font-size: 0.85rem;
+}
+
+/* === RÉSULTATS === */
+.results-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.3s;
+}
+
+.result-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 80, 80, 0.3);
+  box-shadow: 0 0 24px rgba(255, 60, 60, 0.1);
+}
+
+.result-card h3 {
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+
+.result-field {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.result-field:last-child {
+  border-bottom: none;
+}
+
+.result-label {
+  color: #8f8f99;
+  font-weight: 500;
+}
+
+.result-value {
+  color: #e8e8ec;
+  text-align: right;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #8f8f99;
+}
+
+/* === ADMIN PANEL === */
+.admin-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.admin-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.admin-section h3 {
+  color: #ff8888;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+table th {
+  background: rgba(255, 80, 80, 0.1);
+  color: #ff8888;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 80, 80, 0.2);
+}
+
+table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: #e8e8ec;
+}
+
+table tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.btn-delete {
+  background: rgba(255, 60, 60, 0.2);
+  border: none;
+  color: #ff8888;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s;
+}
+
+.btn-delete:hover {
+  background: rgba(255, 60, 60, 0.35);
+}
+
+.success-msg {
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #90ee90;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+.success-msg.show {
+  display: block;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  #searchScreen, #adminScreen {
+    padding: 24px 16px;
   }
 
-  /* === HALO DE FOND === */
-  body::before{
-    content:'';position:fixed;top:-320px;left:50%;
-    transform:translateX(-50%);
-    width:150%;max-width:1400px;height:900px;
-    background:radial-gradient(ellipse at center,
-      rgba(255,55,55,0.20) 0%,
-      rgba(255,30,30,0.07) 35%,
-      transparent 65%);
-    pointer-events:none;z-index:0;filter:blur(40px);
+  .search-header {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  /* === DÉCOR DE FOND === */
-  .scene{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;perspective:1200px}
-  .grid-floor{
-    position:absolute;bottom:-10%;left:50%;width:200%;height:60%;
-    transform:translateX(-50%) perspective(500px) rotateX(65deg);
-    transform-origin:center bottom;
-    background-image:
-      linear-gradient(rgba(255,60,60,0.16) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,60,60,0.16) 1px,transparent 1px);
-    background-size:60px 60px;
-    mask-image:radial-gradient(ellipse at center bottom,black 20%,transparent 70%);
-    -webkit-mask-image:radial-gradient(ellipse at center bottom,black 20%,transparent 70%);
-    animation:gridScroll 14s linear infinite;
-    opacity:0.65;
-  }
-  @keyframes gridScroll{0%{background-position:0 0}100%{background-position:0 60px}}
-
-  .ring{
-    position:absolute;top:50%;left:50%;
-    width:420px;height:420px;margin:-210px 0 0 -210px;
-    border-radius:50%;
-    border:1px solid rgba(255,80,80,0.16);
-    transform-style:preserve-3d;
-    animation:ringSpin 22s linear infinite;
-  }
-  .ring:nth-of-type(2){
-    width:560px;height:560px;margin:-280px 0 0 -280px;
-    border-color:rgba(255,80,80,0.09);
-    animation-duration:32s;animation-direction:reverse;
-  }
-  .ring:nth-of-type(3){
-    width:700px;height:700px;margin:-350px 0 0 -350px;
-    border-color:rgba(255,80,80,0.05);
-    animation-duration:48s;
-  }
-  @keyframes ringSpin{
-    0%{transform:rotateX(72deg) rotateZ(0deg)}
-    100%{transform:rotateX(72deg) rotateZ(360deg)}
+  .filters-panel {
+    grid-template-columns: 1fr;
   }
 
-  /* === TOPBAR === */
-  .topbar{
-    position:fixed;top:0;left:0;right:0;
-    z-index:50;
-    padding:18px 28px;
-    display:flex;align-items:center;justify-content:space-between;
-    gap:20px;
-    background:linear-gradient(to bottom,rgba(6,6,7,0.85),transparent);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-    animation:softEnter 0.7s cubic-bezier(0.25,0.46,0.45,0.94) backwards;
-  }
-  @keyframes softEnter{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-
-  .brand{
-    display:flex;align-items:center;gap:12px;
-    cursor:default;user-select:none;
-  }
-  .brand-logo{
-    width:38px;height:38px;border-radius:11px;
-    background:linear-gradient(160deg,#ffffff 0%,#cfcfd4 60%,#9a9aa2 100%);
-    display:flex;align-items:center;justify-content:center;
-    box-shadow:
-      0 0 30px rgba(255,60,60,0.30),
-      0 0 0 1px rgba(255,255,255,0.10) inset;
-    transition:transform 0.4s cubic-bezier(0.2,0.9,0.3,1);
-  }
-  .brand:hover .brand-logo{transform:rotate(-8deg) scale(1.05)}
-  .brand-logo svg{width:20px;height:20px;color:#08080a}
-
-  .brand-name{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:1.02rem;font-weight:700;
-    letter-spacing:-0.03em;color:#fff;
-  }
-  .brand-name em{
-    font-style:normal;color:#ff5a5a;
-  }
-  .brand-tag{
-    font-size:0.6rem;font-weight:600;
-    letter-spacing:0.18em;text-transform:uppercase;
-    color:#6e6e78;
-    border-left:1px solid rgba(255,255,255,0.10);
-    padding-left:12px;margin-left:4px;
+  .result-field {
+    flex-direction: column;
   }
 
-  .top-actions{display:flex;align-items:center;gap:10px}
-
-  .icon-btn{
-    width:38px;height:38px;border-radius:11px;
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.08);
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-    transition:all 0.25s cubic-bezier(0.2,0.9,0.3,1);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-    color:#c9c9d1;
+  .result-value {
+    text-align: left;
+    margin-top: 4px;
   }
-  .icon-btn:hover{
-    background:rgba(255,255,255,0.07);
-    border-color:rgba(255,255,255,0.22);
-    color:#fff;
-    transform:translateY(-1px);
-  }
-  .icon-btn:active{transform:translateY(0) scale(0.96)}
-  .icon-btn svg{width:16px;height:16px}
-
-  /* === SEARCH DOCK === */
-  .search-dock{
-    position:fixed;top:80px;left:50%;
-    transform:translateX(-50%);
-    z-index:40;
-    width:min(620px,calc(100% - 40px));
-    animation:softEnter 0.7s 0.1s cubic-bezier(0.25,0.46,0.45,0.94) backwards;
-  }
-
-  .search-bar{
-    display:flex;align-items:center;gap:10px;
-    padding:8px 8px 8px 18px;
-    border-radius:16px;
-    background:rgba(14,14,17,0.72);
-    border:1px solid rgba(255,255,255,0.10);
-    backdrop-filter:blur(18px) saturate(160%);
-    -webkit-backdrop-filter:blur(18px) saturate(160%);
-    box-shadow:
-      0 20px 50px -20px rgba(0,0,0,0.8),
-      0 1px 0 0 rgba(255,255,255,0.06) inset;
-    transition:border-color 0.3s, box-shadow 0.3s;
-  }
-  .search-bar:focus-within{
-    border-color:rgba(255,80,80,0.45);
-    box-shadow:
-      0 20px 60px -20px rgba(255,60,60,0.35),
-      0 0 0 4px rgba(255,60,60,0.06),
-      0 1px 0 0 rgba(255,255,255,0.06) inset;
-  }
-  .search-bar svg.search-ico{width:18px;height:18px;color:#6e6e78;flex-shrink:0}
-
-  .search-bar input{
-    flex:1;background:transparent;border:none;outline:none;
-    color:#fff;font-family:inherit;
-    font-size:0.95rem;font-weight:500;
-    letter-spacing:-0.01em;
-    padding:12px 0;
-    min-width:0;
-  }
-  .search-bar input::placeholder{color:#4a4a55;font-weight:400}
-
-  .search-btn{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:11px 20px;
-    border-radius:11px;
-    background:#ff3d3d;
-    color:#fff;
-    font-family:inherit;font-size:0.82rem;font-weight:600;
-    letter-spacing:-0.01em;
-    border:none;cursor:pointer;
-    transition:all 0.25s cubic-bezier(0.2,0.9,0.3,1);
-    box-shadow:0 8px 24px -8px rgba(255,60,60,0.7);
-    white-space:nowrap;
-  }
-  .search-btn:hover{background:#ff5252;transform:translateY(-1px);box-shadow:0 12px 28px -8px rgba(255,60,60,0.9)}
-  .search-btn:active{transform:translateY(0) scale(0.98)}
-  .search-btn svg{width:14px;height:14px}
-
-  .search-hints{
-    display:flex;gap:8px;justify-content:center;
-    margin-top:12px;flex-wrap:wrap;
-  }
-  .hint-chip{
-    font-size:0.68rem;font-weight:500;
-    color:#8f8f99;
-    padding:5px 11px;border-radius:8px;
-    background:rgba(255,255,255,0.03);
-    border:1px solid rgba(255,255,255,0.07);
-    cursor:pointer;
-    transition:all 0.2s;
-    font-family:'JetBrains Mono',monospace;
-  }
-  .hint-chip:hover{
-    color:#fff;border-color:rgba(255,80,80,0.4);
-    background:rgba(255,60,60,0.06);
-  }
-
-  /* === CANVAS GRAPHE === */
-  .graph-wrap{
-    position:fixed;
-    top:0;left:0;right:0;bottom:0;
-    z-index:10;
-    overflow:hidden;
-    cursor:grab;
-  }
-  .graph-wrap.panning{cursor:grabbing}
-  .graph-wrap.searching{cursor:progress}
-
-  .graph-canvas{
-    position:absolute;
-    top:0;left:0;
-    width:100%;height:100%;
-    transform-origin:0 0;
-    will-change:transform;
-  }
-
-  /* Connecteurs SVG */
-  .edges-svg{
-    position:absolute;
-    top:0;left:0;
-    width:6000px;height:4000px;
-    pointer-events:none;
-    overflow:visible;
-  }
-  .edge{
-    fill:none;
-    stroke:rgba(255,80,80,0.30);
-    stroke-width:1.5;
-    stroke-dasharray:6 8;
-    animation:dashFlow 1.6s linear infinite;
-    transition:stroke 0.3s;
-  }
-  .edge.active{stroke:rgba(255,80,80,0.85);stroke-width:2;filter:drop-shadow(0 0 6px rgba(255,60,60,0.6))}
-  @keyframes dashFlow{to{stroke-dashoffset:-28}}
-
-  .edge-glow{
-    fill:none;
-    stroke:rgba(255,60,60,0.10);
-    stroke-width:6;
-  }
-
-  /* Cartes */
-  .card{
-    position:absolute;
-    width:230px;
-    padding:16px 16px 15px;
-    border-radius:16px;
-    background:rgba(12,12,15,0.78);
-    border:1px solid rgba(255,255,255,0.10);
-    backdrop-filter:blur(16px) saturate(160%);
-    -webkit-backdrop-filter:blur(16px) saturate(160%);
-    box-shadow:
-      0 18px 40px -18px rgba(0,0,0,0.9),
-      0 1px 0 0 rgba(255,255,255,0.06) inset;
-    user-select:none;
-    cursor:grab;
-    transition:box-shadow 0.25s, border-color 0.25s, transform 0.35s cubic-bezier(0.2,0.9,0.3,1);
-    will-change:left,top;
-  }
-  .card:hover{
-    border-color:rgba(255,255,255,0.22);
-    box-shadow:
-      0 24px 55px -20px rgba(0,0,0,0.95),
-      0 0 0 1px rgba(255,80,80,0.10),
-      0 1px 0 0 rgba(255,255,255,0.08) inset;
-  }
-  .card.dragging{
-    cursor:grabbing;
-    z-index:1000!important;
-    box-shadow:
-      0 35px 80px -20px rgba(0,0,0,1),
-      0 0 0 1px rgba(255,80,80,0.35),
-      0 0 40px -5px rgba(255,60,60,0.25);
-    border-color:rgba(255,80,80,0.5);
-    transform:scale(1.02);
-  }
-  .card.spawn{
-    animation:cardSpawn 0.65s cubic-bezier(0.2,0.9,0.3,1) backwards;
-  }
-  @keyframes cardSpawn{
-    0%{opacity:0;transform:translateY(20px) scale(0.9)}
-    60%{opacity:1;transform:translateY(-3px) scale(1.015)}
-    100%{opacity:1;transform:translateY(0) scale(1)}
-  }
-
-  .card-head{
-    display:flex;align-items:center;gap:9px;
-    margin-bottom:11px;
-  }
-  .card-ico{
-    width:28px;height:28px;border-radius:9px;
-    display:flex;align-items:center;justify-content:center;
-    flex-shrink:0;
-    background:rgba(255,60,60,0.10);
-    border:1px solid rgba(255,80,80,0.20);
-    color:#ff5a5a;
-  }
-  .card-ico svg{width:14px;height:14px}
-  .card-ico.green{background:rgba(0,224,122,0.10);border-color:rgba(0,224,122,0.28);color:#00e07a}
-  .card-ico.blue{background:rgba(77,163,255,0.10);border-color:rgba(77,163,255,0.28);color:#4da3ff}
-  .card-ico.amber{background:rgba(255,180,60,0.10);border-color:rgba(255,180,60,0.28);color:#ffb43c}
-  .card-ico.purple{background:rgba(180,120,255,0.10);border-color:rgba(180,120,255,0.28);color:#b478ff}
-
-  .card-title{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:0.78rem;font-weight:700;
-    letter-spacing:-0.01em;
-    color:#fff;
-    line-height:1.2;
-  }
-  .card-sub{
-    font-size:0.6rem;font-weight:500;
-    letter-spacing:0.14em;text-transform:uppercase;
-    color:#6e6e78;margin-top:2px;
-  }
-
-  .card-body{display:flex;flex-direction:column;gap:7px}
-  .card-row{
-    display:flex;align-items:center;justify-content:space-between;
-    gap:10px;
-    font-size:0.76rem;
-  }
-  .card-row .k{color:#6e6e78;font-weight:500}
-  .card-row .v{
-    color:#e8e8ec;font-weight:600;
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.72rem;
-    text-align:right;
-    letter-spacing:-0.02em;
-  }
-  .card-row .v.good{color:#00e07a}
-  .card-row .v.bad{color:#ff5a5a}
-  .card-row .v.warn{color:#ffb43c}
-  .card-row .v.hi{color:#4da3ff}
-
-  .card-badge{
-    display:inline-flex;align-items:center;gap:5px;
-    padding:3px 9px;border-radius:7px;
-    font-size:0.6rem;font-weight:700;
-    letter-spacing:0.06em;text-transform:uppercase;
-    font-family:'Inter',sans-serif;
-  }
-  .badge-live{background:rgba(0,224,122,0.12);color:#00e07a;border:1px solid rgba(0,224,122,0.3)}
-  .badge-dead{background:rgba(255,90,90,0.10);color:#ff5a5a;border:1px solid rgba(255,90,90,0.28)}
-  .badge-warn{background:rgba(255,180,60,0.10);color:#ffb43c;border:1px solid rgba(255,180,60,0.28)}
-  .badge-live .dot,.badge-dead .dot,.badge-warn .dot{
-    width:5px;height:5px;border-radius:50%;background:currentColor;
-    animation:pulseDot 1.8s ease-in-out infinite;
-  }
-  .badge-dead .dot{animation:none;opacity:0.6}
-  @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:0.3}}
-
-  /* Barre de fiabilité */
-  .reliability{
-    margin-top:11px;padding-top:11px;
-    border-top:1px solid rgba(255,255,255,0.06);
-  }
-  .reliability-head{
-    display:flex;justify-content:space-between;
-    font-size:0.58rem;font-weight:600;
-    letter-spacing:0.12em;text-transform:uppercase;
-    color:#6e6e78;margin-bottom:6px;
-  }
-  .reliability-head span:last-child{color:#c9c9d1}
-  .bar{
-    height:3px;border-radius:3px;
-    background:rgba(255,255,255,0.06);
-    overflow:hidden;
-  }
-  .bar-fill{
-    height:100%;border-radius:3px;
-    background:linear-gradient(90deg,#ff3d3d,#ff7a7a);
-    width:0;
-    animation:barGrow 1s cubic-bezier(0.2,0.9,0.3,1) forwards;
-    box-shadow:0 0 12px rgba(255,60,60,0.5);
-  }
-  .bar-fill.green{background:linear-gradient(90deg,#00e07a,#4dffa0);box-shadow:0 0 12px rgba(0,224,122,0.5)}
-  .bar-fill.blue{background:linear-gradient(90deg,#4da3ff,#7ac0ff);box-shadow:0 0 12px rgba(77,163,255,0.5)}
-  @keyframes barGrow{to{width:var(--w,60%)}}
-
-  /* Poignée de drag */
-  .card-grip{
-    position:absolute;top:8px;right:8px;
-    width:16px;height:16px;
-    display:flex;align-items:center;justify-content:center;
-    color:#3a3a42;
-    opacity:0;transition:opacity 0.2s;
-  }
-  .card:hover .card-grip{opacity:1}
-  .card-grip svg{width:10px;height:10px}
-
-  /* === HUD BAS === */
-  .hud{
-    position:fixed;bottom:22px;left:50%;
-    transform:translateX(-50%);
-    z-index:50;
-    display:flex;align-items:center;gap:8px;
-    padding:8px;
-    border-radius:14px;
-    background:rgba(10,10,13,0.72);
-    border:1px solid rgba(255,255,255,0.08);
-    backdrop-filter:blur(18px) saturate(160%);
-    -webkit-backdrop-filter:blur(18px) saturate(160%);
-    box-shadow:0 20px 50px -20px rgba(0,0,0,0.9);
-    animation:softEnter 0.7s 0.3s cubic-bezier(0.25,0.46,0.45,0.94) backwards;
-  }
-  .hud-btn{
-    display:inline-flex;align-items:center;gap:7px;
-    padding:8px 13px;border-radius:9px;
-    background:transparent;border:1px solid transparent;
-    color:#8f8f99;font-family:inherit;
-    font-size:0.7rem;font-weight:600;
-    letter-spacing:-0.01em;
-    cursor:pointer;
-    transition:all 0.2s;
-    white-space:nowrap;
-  }
-  .hud-btn:hover{color:#fff;background:rgba(255,255,255,0.05)}
-  .hud-btn.active{color:#ff5a5a;background:rgba(255,60,60,0.08);border-color:rgba(255,80,80,0.25)}
-  .hud-btn svg{width:13px;height:13px}
-  .hud-sep{width:1px;height:20px;background:rgba(255,255,255,0.08)}
-
-  /* === ÉTAT VIDE === */
-  .empty-state{
-    position:fixed;inset:0;z-index:5;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    text-align:center;padding:0 24px;
-    pointer-events:none;
-    transition:opacity 0.5s;
-  }
-  .empty-state.hidden{opacity:0;pointer-events:none}
-  .empty-logo{
-    width:80px;height:80px;border-radius:22px;
-    background:linear-gradient(160deg,#ffffff 0%,#cfcfd4 60%,#9a9aa2 100%);
-    display:flex;align-items:center;justify-content:center;
-    margin-bottom:26px;
-    box-shadow:
-      0 0 60px rgba(255,60,60,0.30),
-      0 0 0 1px rgba(255,255,255,0.10) inset,
-      0 30px 50px -20px rgba(0,0,0,0.8);
-    animation:floaty 5s ease-in-out infinite;
-  }
-  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-  .empty-logo svg{width:40px;height:40px;color:#08080a}
-  .empty-title{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:clamp(1.6rem,4vw,2.3rem);
-    font-weight:700;letter-spacing:-0.04em;
-    color:#fff;margin-bottom:14px;line-height:1.1;
-  }
-  .empty-title em{font-style:normal;color:#ff5a5a}
-  .empty-desc{
-    font-size:0.88rem;color:#8f8f99;
-    line-height:1.65;max-width:380px;
-  }
-  .empty-desc em{font-style:normal;color:#c9c9d1;font-weight:500}
-
-  /* === SCAN OVERLAY === */
-  .scan-overlay{
-    position:fixed;inset:0;z-index:200;
-    display:flex;align-items:center;justify-content:center;
-    background:rgba(6,6,7,0.82);
-    backdrop-filter:blur(14px) saturate(150%);
-    -webkit-backdrop-filter:blur(14px) saturate(150%);
-    opacity:0;pointer-events:none;
-    transition:opacity 0.35s;
-  }
-  .scan-overlay.open{opacity:1;pointer-events:auto}
-  .scan-box{
-    display:flex;flex-direction:column;align-items:center;gap:22px;
-    transform:scale(0.95);
-    transition:transform 0.4s cubic-bezier(0.2,0.9,0.3,1);
-  }
-  .scan-overlay.open .scan-box{transform:scale(1)}
-  .scan-ring{
-    width:80px;height:80px;position:relative;
-  }
-  .scan-ring::before,.scan-ring::after{
-    content:'';position:absolute;inset:0;
-    border-radius:50%;
-    border:2px solid transparent;
-    border-top-color:#ff3d3d;
-    animation:spin 1s linear infinite;
-  }
-  .scan-ring::after{
-    inset:10px;
-    border-top-color:transparent;
-    border-right-color:#ff7a7a;
-    animation-duration:1.6s;
-    animation-direction:reverse;
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .scan-text{
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.78rem;font-weight:500;
-    color:#c9c9d1;letter-spacing:0.05em;
-    min-height:1.2em;
-  }
-  .scan-text .cursor{
-    display:inline-block;width:7px;height:13px;
-    background:#ff5a5a;margin-left:2px;
-    vertical-align:middle;
-    animation:blink 0.9s steps(1) infinite;
-  }
-  @keyframes blink{50%{opacity:0}}
-
-  /* === MODALES === */
-  .modal-overlay{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,0.72);
-    backdrop-filter:blur(14px) saturate(150%);
-    -webkit-backdrop-filter:blur(14px) saturate(150%);
-    z-index:500;
-    display:flex;align-items:flex-start;justify-content:center;
-    padding:44px 20px;overflow-y:auto;
-    opacity:0;pointer-events:none;
-    transition:opacity 0.3s;
-  }
-  .modal-overlay.open{opacity:1;pointer-events:auto}
-  .modal{
-    background:#0c0c0e;
-    border:1px solid rgba(255,255,255,0.14);
-    border-radius:20px;
-    max-width:520px;width:100%;
-    max-height:80vh;overflow:auto;
-    padding:26px;position:relative;
-    transform:scale(0.95) translateY(16px);
-    transition:transform 0.4s cubic-bezier(0.2,0.9,0.3,1);
-    box-shadow:
-      0 40px 100px rgba(0,0,0,0.6),
-      0 1px 0 0 rgba(255,255,255,0.08) inset;
-    text-align:left;
-  }
-  .modal-overlay.open .modal{transform:scale(1) translateY(0)}
-  .modal-close{
-    position:absolute;top:14px;right:14px;
-    width:30px;height:30px;border-radius:9px;
-    background:rgba(20,20,24,0.5);
-    border:1px solid rgba(255,255,255,0.08);
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;transition:all 0.2s;
-  }
-  .modal-close:hover{
-    background:rgba(30,30,36,0.8);
-    border-color:rgba(255,255,255,0.2);
-    transform:rotate(90deg);
-  }
-  .modal-close svg{width:12px;height:12px;color:#8a8a95}
-  .modal-title{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:1.1rem;font-weight:700;
-    color:#fff;margin-bottom:16px;letter-spacing:-0.02em;
-  }
-  .modal-body{font-size:0.82rem;color:#8a8a95;line-height:1.7}
-  .modal-body p{margin-bottom:12px}
-  .modal-body strong{color:#e8e8ec;font-weight:600}
-  .modal-body a{color:#4da3ff;text-decoration:none}
-  .modal-body a:hover{text-decoration:underline}
-  .modal-body h3{color:#fff;font-size:0.85rem;font-weight:600;margin:16px 0 8px}
-  .modal-body ul{padding-left:18px;margin-bottom:12px}
-  .modal-body li{margin-bottom:4px}
-
-  /* === RESPONSIVE === */
-  @media (max-width:640px){
-    .topbar{padding:14px 16px}
-    .brand-tag{display:none}
-    .brand-name{font-size:0.92rem}
-    .search-dock{top:70px;width:calc(100% - 32px)}
-    .search-bar{padding:6px 6px 6px 14px}
-    .search-bar input{font-size:0.88rem;padding:10px 0}
-    .search-btn{padding:10px 14px;font-size:0.76rem}
-    .search-btn span{display:none}
-    .hint-chip{font-size:0.62rem;padding:4px 9px}
-    .card{width:200px;padding:13px 13px 12px}
-    .card-title{font-size:0.72rem}
-    .card-row{font-size:0.7rem}
-    .card-row .v{font-size:0.66rem}
-    .hud{padding:6px;bottom:14px}
-    .hud-btn{padding:7px 10px;font-size:0.65rem}
-    .hud-btn span{display:none}
-    .ring{width:300px;height:300px;margin:-150px 0 0 -150px}
-    .ring:nth-of-type(2){width:400px;height:400px;margin:-200px 0 0 -200px}
-    .ring:nth-of-type(3){width:500px;height:500px;margin:-250px 0 0 -250px}
-    .empty-logo{width:64px;height:64px;border-radius:18px;margin-bottom:20px}
-    .empty-logo svg{width:32px;height:32px}
-  }
+}
 </style>
 </head>
 <body>
 
-<!-- DÉCOR -->
 <div class="scene" aria-hidden="true">
   <div class="grid-floor"></div>
   <div class="ring"></div>
@@ -619,967 +534,454 @@
   <div class="ring"></div>
 </div>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="brand">
-    <div class="brand-logo">
+<!-- === LOGIN SCREEN === -->
+<div id="loginScreen" class="screen active">
+  <div class="login-wrap">
+    <div class="logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
     </div>
-    <div class="brand-name">Seek<em>It</em></div>
-    <div class="brand-tag">Phone Intel</div>
-  </div>
-  <div class="top-actions">
-    <button class="icon-btn" id="aboutBtn" title="À propos">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="16" x2="12" y2="12"></line>
-        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-      </svg>
-    </button>
-    <button class="icon-btn" id="legalBtn" title="Mentions légales">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-      </svg>
-    </button>
-  </div>
-</div>
-
-<!-- SEARCH DOCK -->
-<div class="search-dock">
-  <div class="search-bar">
-    <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"></circle>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-    </svg>
-    <input type="tel" id="phoneInput" placeholder="+33 6 12 34 56 78" autocomplete="off" spellcheck="false" value="+33 6 12 34 56 78">
-    <button class="search-btn" id="searchBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-        <polyline points="12 5 19 12 12 19"></polyline>
-      </svg>
-      <span>Analyser</span>
-    </button>
-  </div>
-  <div class="search-hints">
-    <div class="hint-chip" data-fill="+33 6 12 34 56 78">+33 6 12 34 56 78</div>
-    <div class="hint-chip" data-fill="+1 415 555 0132">+1 415 555 0132</div>
-    <div class="hint-chip" data-fill="+44 7700 900123">+44 7700 900123</div>
-    <div class="hint-chip" data-fill="+49 151 23456789">+49 151 23456789</div>
-  </div>
-</div>
-
-<!-- ÉTAT VIDE -->
-<div class="empty-state" id="emptyState">
-  <div class="empty-logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"></circle>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-    </svg>
-  </div>
-  <div class="empty-title">Traque un <em>numéro</em>.</div>
-  <p class="empty-desc">
-    Entre un numéro et laisse Seek It dérouler le fil : <em>opérateur, statut, localisation, entités liées</em>. Chaque carte est déplaçable — organise l'enquête à ta façon.
-  </p>
-</div>
-
-<!-- GRAPHE -->
-<div class="graph-wrap" id="graphWrap">
-  <div class="graph-canvas" id="graphCanvas">
-    <svg class="edges-svg" id="edgesSvg"></svg>
-    <div id="cardsLayer"></div>
-  </div>
-</div>
-
-<!-- HUD -->
-<div class="hud">
-  <button class="hud-btn active" id="layoutTree" title="Disposition arbre">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
-      <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
-      <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
-      <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
-    </svg>
-    <span>Arbre</span>
-  </button>
-  <button class="hud-btn" id="layoutRadial" title="Disposition radiale">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"></circle>
-      <circle cx="12" cy="12" r="9"></circle>
-      <line x1="12" y1="3" x2="12" y2="6"></line>
-      <line x1="12" y1="18" x2="12" y2="21"></line>
-      <line x1="3" y1="12" x2="6" y2="12"></line>
-      <line x1="18" y1="12" x2="21" y2="12"></line>
-    </svg>
-    <span>Radial</span>
-  </button>
-  <div class="hud-sep"></div>
-  <button class="hud-btn" id="resetView" title="Recentrer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 12a9 9 0 1 0 3-6.7"></path>
-      <polyline points="3 4 3 9 8 9"></polyline>
-    </svg>
-    <span>Recentrer</span>
-  </button>
-  <button class="hud-btn" id="clearBtn" title="Tout effacer">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="3 6 5 6 21 6"></polyline>
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-    </svg>
-    <span>Effacer</span>
-  </button>
-</div>
-
-<!-- SCAN OVERLAY -->
-<div class="scan-overlay" id="scanOverlay">
-  <div class="scan-box">
-    <div class="scan-ring"></div>
-    <div class="scan-text" id="scanText">Init<span class="cursor"></span></div>
-  </div>
-</div>
-
-<!-- MODALES -->
-<div class="modal-overlay" id="aboutModal">
-  <div class="modal">
-    <button class="modal-close" data-close="aboutModal">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-    <div class="modal-title">À propos de Seek It</div>
-    <div class="modal-body">
-      <p><strong>Seek It</strong> est un moteur d'investigation téléphonique. Il recoupe opérateurs, plages de numérotation, bases publiques et fuites documentées pour dresser une carte des entités liées à un numéro.</p>
-      <h3>Comment ça marche</h3>
-      <p>Saisis un numéro (avec ou sans indicatif). Seek It affiche une carte centrale puis déploie les entités autour : opérateur, statut, localisation, ligne, appareil, entités liées.</p>
-      <h3>Manipulation</h3>
-      <ul>
-        <li><strong>Clic-glisser</strong> sur une carte : la déplacer</li>
-        <li><strong>Glisser dans le vide</strong> : déplacer la vue</li>
-        <li><strong>Molette</strong> : zoomer / dézoomer</li>
-        <li><strong>Arbre / Radial</strong> : réorganiser automatiquement</li>
-      </ul>
-      <h3>Confidentialité</h3>
-      <p>Aucune recherche n'est stockée côté serveur. Tout se passe localement.</p>
+    <h1>Seek <span class="accent">It</span></h1>
+    <p class="desc">Moteur de recherche de personnes avec données publiques</p>
+    
+    <div class="form-group">
+      <label>Nom d'utilisateur Discord</label>
+      <input type="text" id="discordUsername" placeholder="ton_pseudo">
     </div>
+
+    <button class="btn btn-discord" onclick="login()">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+        <path d="M20.317 4.369a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 13.79 13.79 0 0 0-.617 1.27 18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.626-1.27.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+      </svg>
+      Se connecter
+    </button>
   </div>
 </div>
 
-<div class="modal-overlay" id="legalModal">
-  <div class="modal">
-    <button class="modal-close" data-close="legalModal">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-    <div class="modal-title">Mentions légales & RGPD</div>
-    <div class="modal-body">
-      <h3>1. Objet</h3>
-      <p>Seek It est un outil d'aide à l'investigation sur des données téléphoniques publiques. L'utilisateur est seul responsable de l'usage qu'il fait des informations consultées.</p>
-      <h3>2. Sources</h3>
-      <p>Plages de numérotation officielles, registres d'opérateurs, bases publiques, fuites documentées. Seek It n'effectue aucune intrusion ni interception.</p>
-      <h3>3. Utilisation interdite</h3>
-      <p>Toute utilisation à des fins de harcèlement, doxxing, chantage ou atteinte à la vie privée est strictement prohibée.</p>
-      <h3>4. Responsabilité</h3>
-      <p>Les résultats peuvent être incomplets ou approximatifs. Vérifie toute information avant usage.</p>
-      <h3>5. RGPD</h3>
-      <p>Aucune recherche stockée, aucun cookie de tracking. Le stockage local (localStorage) ne sert qu'à tes préférences d'affichage. Droit d'accès, rectification et suppression : <a href="https://discord.gg/GT2C3f6cgQ" target="_blank" rel="noopener noreferrer">Discord</a></p>
-      <h3>6. Cookies</h3>
-      <p>Aucun cookie tiers, aucun pixel, aucun analytics externe.</p>
-      <p style="margin-top:16px;font-size:0.75rem;color:#4a4a55">Dernière modification : 18 sept. 2026</p>
+<!-- === SEARCH SCREEN === -->
+<div id="searchScreen" class="screen">
+  <div class="search-container">
+    <div class="search-header">
+      <h2>Rechercher</h2>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-admin" onclick="goToAdmin()">Panneau Admin</button>
+        <button class="btn btn-logout" onclick="logout()">Déconnexion</button>
+      </div>
+    </div>
+
+    <input type="text" class="search-box" id="mainSearch" placeholder="Prénom + Nom / Email / Numéro...">
+    
+    <button class="filters-toggle" onclick="toggleFilters()">+ Filtres avancés</button>
+
+    <div class="filters-panel" id="filtersPanel">
+      <div class="filter-field">
+        <label>Pays</label>
+        <input type="text" id="filterPays" placeholder="France">
+      </div>
+      <div class="filter-field">
+        <label>Ville</label>
+        <input type="text" id="filterVille" placeholder="Paris">
+      </div>
+      <div class="filter-field">
+        <label>Code Postal</label>
+        <input type="text" id="filterCodePostal" placeholder="75001">
+      </div>
+      <div class="filter-field">
+        <label>Département</label>
+        <input type="text" id="filterDept" placeholder="75">
+      </div>
+      <div class="filter-field">
+        <label>Adresse</label>
+        <input type="text" id="filterAdresse">
+      </div>
+      <div class="filter-field">
+        <label>Adresse IP</label>
+        <input type="text" id="filterIP" placeholder="192.168.1.1">
+      </div>
+      <div class="filter-field">
+        <label>IBAN</label>
+        <input type="text" id="filterIBAN">
+      </div>
+      <div class="filter-field">
+        <label>Année Naissance</label>
+        <input type="text" id="filterAnnee" placeholder="1990">
+      </div>
+      <div class="filter-field">
+        <label>Genre</label>
+        <input type="text" id="filterGenre" placeholder="M/F">
+      </div>
+      <div class="filter-field">
+        <label>Fiabilité Min</label>
+        <input type="number" id="filterFiabilite" placeholder="80" min="0" max="100">
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="search()" style="width: 100%; margin-bottom: 40px;">Rechercher</button>
+  </div>
+
+  <div class="results-container" id="resultsContainer"></div>
+</div>
+
+<!-- === ADMIN SCREEN === -->
+<div id="adminScreen" class="screen">
+  <div class="admin-container">
+    <div class="admin-header">
+      <h2 style="color: white; font-size: 2rem;">Panneau Admin</h2>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-logout" onclick="backToSearch()">Retour à la Recherche</button>
+        <button class="btn btn-logout" onclick="logout()">Déconnexion</button>
+      </div>
+    </div>
+
+    <div class="success-msg" id="successMsg">Opération effectuée avec succès!</div>
+
+    <!-- Ajouter un enregistrement -->
+    <div class="admin-section">
+      <h3>➕ Ajouter un Enregistrement</h3>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Prénom</label>
+          <input type="text" id="adminPrenom" placeholder="Jean">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Nom</label>
+          <input type="text" id="adminNom" placeholder="Dupont">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Email</label>
+          <input type="email" id="adminEmail" placeholder="email@example.com">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Téléphone</label>
+          <input type="tel" id="adminTel" placeholder="0612345678">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Ville</label>
+          <input type="text" id="adminVille" placeholder="Paris">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Pays</label>
+          <input type="text" id="adminPays" placeholder="France">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Code Postal</label>
+          <input type="text" id="adminCP" placeholder="75001">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Année Naissance</label>
+          <input type="number" id="adminAnnee" placeholder="1990">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Adresse IP</label>
+          <input type="text" id="adminIP" placeholder="192.168.1.1">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Fiabilité (%)</label>
+          <input type="number" id="adminFiabilite" placeholder="95" min="0" max="100">
+        </div>
+      </div>
+      <button class="btn btn-discord" onclick="addRecord()" style="width: 100%; margin-top: 12px;">Ajouter</button>
+    </div>
+
+    <!-- Gestion de la base de données -->
+    <div class="admin-section">
+      <h3>🗄️ Gestion Base de Données</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Prénom</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Téléphone</th>
+              <th>Ville</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTable">
+            <tr><td colspan="6" style="text-align: center; color: #8f8f99;">Aucune donnée</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn btn-secondary" onclick="exportDatabase()" style="margin-right: 10px;">📥 Exporter</button>
+      <button class="btn btn-secondary" onclick="clearDatabase()">🗑️ Vider la Base</button>
     </div>
   </div>
 </div>
 
 <script>
-/* =========================================================
-   SEEK IT — Phone Intel Graph
-   ========================================================= */
-(function(){
-  "use strict";
+// === STATE MANAGEMENT ===
+let currentUser = null;
+let database = [];
 
-  /* ---------- Éléments ---------- */
-  var graphWrap   = document.getElementById('graphWrap');
-  var graphCanvas = document.getElementById('graphCanvas');
-  var edgesSvg    = document.getElementById('edgesSvg');
-  var cardsLayer  = document.getElementById('cardsLayer');
-  var emptyState  = document.getElementById('emptyState');
-  var scanOverlay = document.getElementById('scanOverlay');
-  var scanText    = document.getElementById('scanText');
-  var phoneInput  = document.getElementById('phoneInput');
-  var searchBtn   = document.getElementById('searchBtn');
+// Load from localStorage on startup
+function initDatabase() {
+  const saved = localStorage.getItem('seekitDB');
+  if (saved) {
+    try {
+      database = JSON.parse(saved);
+    } catch(e) {
+      database = [];
+    }
+  }
+}
 
-  var layoutTree   = document.getElementById('layoutTree');
-  var layoutRadial = document.getElementById('layoutRadial');
-  var resetView    = document.getElementById('resetView');
-  var clearBtn     = document.getElementById('clearBtn');
+function saveDatabase() {
+  localStorage.setItem('seekitDB', JSON.stringify(database));
+}
 
-  /* ---------- État ---------- */
-  var cards = [];        // { id, el, x, y, w, h, node, parent }
-  var edges = [];        // { from, to, el, glow }
-  var view  = { x:0, y:0, scale:1 };
-  var isPanning = false;
-  var panStart = { x:0, y:0, vx:0, vy:0 };
-  var currentLayout = 'tree';
-  var nodeIdCounter = 0;
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
 
-  /* ---------- Utilitaires ---------- */
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+// === LOGIN ===
+function login() {
+  const username = document.getElementById('discordUsername').value.trim();
+  if (!username) {
+    alert('Entre ton pseudo Discord');
+    return;
+  }
+  currentUser = {
+    username: username,
+    isAdmin: username === 'gouvernemental.'
+  };
+  initDatabase();
+  showScreen('searchScreen');
+}
 
-  function rand(min,max){ return Math.random()*(max-min)+min; }
+function logout() {
+  currentUser = null;
+  document.getElementById('discordUsername').value = '';
+  document.getElementById('mainSearch').value = '';
+  document.getElementById('resultsContainer').innerHTML = '';
+  clearAllFilters();
+  showScreen('loginScreen');
+}
 
-  function pad(n){ return String(n).padStart(2,'0'); }
+// === SEARCH INTERFACE ===
+function toggleFilters() {
+  document.getElementById('filtersPanel').classList.toggle('open');
+}
 
-  /* ---------- Vue (pan / zoom) ---------- */
-  function applyView(){
-    graphCanvas.style.transform =
-      'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.scale + ')';
+function clearAllFilters() {
+  document.querySelectorAll('[id^="filter"]').forEach(el => el.value = '');
+}
+
+function search() {
+  const query = document.getElementById('mainSearch').value.toLowerCase();
+  
+  if (!query) {
+    document.getElementById('resultsContainer').innerHTML = '<div class="no-results">Entre un terme de recherche</div>';
+    return;
   }
 
-  graphWrap.addEventListener('wheel', function(e){
-    if(e.target.closest('.card')) return;
-    e.preventDefault();
-    var rect = graphWrap.getBoundingClientRect();
-    var mx = e.clientX - rect.left;
-    var my = e.clientY - rect.top;
-    var oldScale = view.scale;
-    var delta = -e.deltaY * 0.0015;
-    var newScale = clamp(oldScale * (1 + delta), 0.35, 2.2);
-    // Zoom vers le curseur
-    view.x = mx - (mx - view.x) * (newScale / oldScale);
-    view.y = my - (my - view.y) * (newScale / oldScale);
-    view.scale = newScale;
-    applyView();
-  }, { passive:false });
-
-  graphWrap.addEventListener('mousedown', function(e){
-    if(e.target.closest('.card')) return;
-    if(e.target.closest('.hud')) return;
-    isPanning = true;
-    graphWrap.classList.add('panning');
-    panStart.x = e.clientX;
-    panStart.y = e.clientY;
-    panStart.vx = view.x;
-    panStart.vy = view.y;
-  });
-
-  window.addEventListener('mousemove', function(e){
-    if(!isPanning) return;
-    view.x = panStart.vx + (e.clientX - panStart.x);
-    view.y = panStart.vy + (e.clientY - panStart.y);
-    applyView();
-  });
-
-  window.addEventListener('mouseup', function(){
-    isPanning = false;
-    graphWrap.classList.remove('panning');
-  });
-
-  /* ---------- Création de carte ---------- */
-  var ICONS = {
-    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
-    signal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>',
-    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
-    sim: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 6h6"/><path d="M9 10h6"/><path d="M9 14h6"/></svg>',
-    device: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
-    user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
-    clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
-    wifi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>',
-    alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+  // Get filters
+  const filters = {
+    pays: document.getElementById('filterPays').value.toLowerCase(),
+    ville: document.getElementById('filterVille').value.toLowerCase(),
+    codePostal: document.getElementById('filterCodePostal').value.toLowerCase(),
+    dept: document.getElementById('filterDept').value.toLowerCase(),
+    adresse: document.getElementById('filterAdresse').value.toLowerCase(),
+    ip: document.getElementById('filterIP').value.toLowerCase(),
+    iban: document.getElementById('filterIBAN').value.toLowerCase(),
+    annee: document.getElementById('filterAnnee').value.toLowerCase(),
+    genre: document.getElementById('filterGenre').value.toLowerCase(),
+    fiabilite: parseInt(document.getElementById('filterFiabilite').value) || 0
   };
 
-  function createCard(opts){
-    // opts: { title, sub, icon, tone, rows:[{k,v,cls}], badge:{text,tone}, reliability:{value,tone,label} }
-    var id = 'c' + (++nodeIdCounter);
-
-    var el = document.createElement('div');
-    el.className = 'card spawn';
-    el.dataset.id = id;
-
-    var head = document.createElement('div');
-    head.className = 'card-head';
-
-    var ico = document.createElement('div');
-    ico.className = 'card-ico' + (opts.tone ? ' ' + opts.tone : '');
-    ico.innerHTML = ICONS[opts.icon] || ICONS.phone;
-    head.appendChild(ico);
-
-    var titles = document.createElement('div');
-    titles.style.flex = '1';
-    titles.style.minWidth = '0';
-    var t = document.createElement('div');
-    t.className = 'card-title';
-    t.textContent = opts.title;
-    var s = document.createElement('div');
-    s.className = 'card-sub';
-    s.textContent = opts.sub || '';
-    titles.appendChild(t);
-    titles.appendChild(s);
-    head.appendChild(titles);
-
-    // Poignée
-    var grip = document.createElement('div');
-    grip.className = 'card-grip';
-    grip.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
-    el.appendChild(grip);
-
-    el.appendChild(head);
-
-    // Badge
-    if(opts.badge){
-      var badge = document.createElement('div');
-      badge.className = 'card-badge badge-' + opts.badge.tone;
-      badge.innerHTML = '<span class="dot"></span>' + opts.badge.text;
-      badge.style.marginBottom = '10px';
-      el.appendChild(badge);
-    }
-
-    // Rows
-    if(opts.rows && opts.rows.length){
-      var body = document.createElement('div');
-      body.className = 'card-body';
-      opts.rows.forEach(function(r){
-        var row = document.createElement('div');
-        row.className = 'card-row';
-        var k = document.createElement('span');
-        k.className = 'k';
-        k.textContent = r.k;
-        var v = document.createElement('span');
-        v.className = 'v' + (r.cls ? ' ' + r.cls : '');
-        v.textContent = r.v;
-        row.appendChild(k);
-        row.appendChild(v);
-        body.appendChild(row);
-      });
-      el.appendChild(body);
-    }
-
-    // Fiabilité
-    if(opts.reliability){
-      var rel = document.createElement('div');
-      rel.className = 'reliability';
-      var rh = document.createElement('div');
-      rh.className = 'reliability-head';
-      rh.innerHTML = '<span>' + (opts.reliability.label || 'Fiabilité') + '</span><span>' + opts.reliability.value + '%</span>';
-      var bar = document.createElement('div');
-      bar.className = 'bar';
-      var fill = document.createElement('div');
-      fill.className = 'bar-fill' + (opts.reliability.tone ? ' ' + opts.reliability.tone : '');
-      fill.style.setProperty('--w', opts.reliability.value + '%');
-      bar.appendChild(fill);
-      rel.appendChild(rh);
-      rel.appendChild(bar);
-      el.appendChild(rel);
-    }
-
-    cardsLayer.appendChild(el);
-
-    var card = {
-      id: id,
-      el: el,
-      x: 0, y: 0,
-      w: 230, h: el.offsetHeight || 120,
-      node: opts
-    };
-
-    // Drag
-    makeDraggable(card);
-
-    cards.push(card);
-    return card;
-  }
-
-  /* ---------- Drag des cartes ---------- */
-  function makeDraggable(card){
-    var startX, startY, origX, origY, dragging = false;
-
-    card.el.addEventListener('mousedown', function(e){
-      if(e.button !== 0) return;
-      e.stopPropagation();
-      dragging = true;
-      card.el.classList.add('dragging');
-      startX = e.clientX;
-      startY = e.clientY;
-      origX = card.x;
-      origY = card.y;
-      card.el.style.zIndex = 9999;
-    });
-
-    window.addEventListener('mousemove', function(e){
-      if(!dragging) return;
-      var dx = (e.clientX - startX) / view.scale;
-      var dy = (e.clientY - startY) / view.scale;
-      card.x = origX + dx;
-      card.y = origY + dy;
-      positionCard(card);
-      updateAllEdges();
-    });
-
-    window.addEventListener('mouseup', function(){
-      if(!dragging) return;
-      dragging = false;
-      card.el.classList.remove('dragging');
-      card.el.style.zIndex = '';
-    });
-
-    // Touch
-    card.el.addEventListener('touchstart', function(e){
-      if(e.touches.length !== 1) return;
-      e.stopPropagation();
-      var t = e.touches[0];
-      dragging = true;
-      card.el.classList.add('dragging');
-      startX = t.clientX;
-      startY = t.clientY;
-      origX = card.x;
-      origY = card.y;
-      card.el.style.zIndex = 9999;
-    }, { passive:true });
-
-    window.addEventListener('touchmove', function(e){
-      if(!dragging || e.touches.length !== 1) return;
-      e.preventDefault();
-      var t = e.touches[0];
-      var dx = (t.clientX - startX) / view.scale;
-      var dy = (t.clientY - startY) / view.scale;
-      card.x = origX + dx;
-      card.y = origY + dy;
-      positionCard(card);
-      updateAllEdges();
-    }, { passive:false });
-
-    window.addEventListener('touchend', function(){
-      if(!dragging) return;
-      dragging = false;
-      card.el.classList.remove('dragging');
-      card.el.style.zIndex = '';
-    });
-  }
-
-  function positionCard(card){
-    card.el.style.left = card.x + 'px';
-    card.el.style.top  = card.y + 'px';
-  }
-
-  /* ---------- Création de connecteur ---------- */
-  function createEdge(fromCard, toCard){
-    var glow = document.createElementNS('http://www.w3.org/2000/svg','path');
-    glow.setAttribute('class','edge-glow');
-    var path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('class','edge');
-
-    edgesSvg.appendChild(glow);
-    edgesSvg.appendChild(path);
-
-    var edge = { from: fromCard, to: toCard, el: path, glow: glow };
-    edges.push(edge);
-    return edge;
-  }
-
-  function edgePath(a, b){
-    // Points de sortie : bas de la carte source, haut de la carte cible
-    var ax = a.x + a.w / 2;
-    var ay = a.y + a.h;
-    var bx = b.x + b.w / 2;
-    var by = b.y;
-
-    var dy = Math.max(40, Math.abs(by - ay) * 0.5);
-    // Courbe de Bézier verticale douce
-    return 'M ' + ax + ' ' + ay +
-           ' C ' + ax + ' ' + (ay + dy) +
-           ', ' + bx + ' ' + (by - dy) +
-           ', ' + bx + ' ' + by;
-  }
-
-  function updateAllEdges(){
-    edges.forEach(function(e){
-      var d = edgePath(e.from, e.to);
-      e.el.setAttribute('d', d);
-      e.glow.setAttribute('d', d);
-    });
-  }
-
-  /* ---------- Layouts ---------- */
-  function layoutTreeLayout(){
-    // Racine en haut, niveau 1 en dessous, niveau 2 en dessous
-    var root = cards[0];
-    if(!root) return;
-
-    // Grouper par "depth" via parent
-    var children = cards.filter(function(c){ return c !== root; });
-
-    var vw = graphWrap.clientWidth;
-    var vh = graphWrap.clientHeight;
-
-    // Racine centrée
-    root.x = vw / 2 - root.w / 2 - view.x / view.scale;
-    root.y = 140 - view.y / view.scale;
-
-    // Niveau 1 : ceux sans enfants → répartis en éventail
-    // On fait un arbre simple : tous les enfants directs du root
-    var level1 = [];
-    var level2 = [];
-    children.forEach(function(c){
-      if(c.node && c.node.parent === 'root') level1.push(c);
-      else level2.push(c);
-    });
-    // Si pas de parent défini, on met tout en level1
-    if(level1.length === 0){ level1 = children; level2 = []; }
-
-    // Level 1 : grille horizontale
-    var cols1 = level1.length;
-    var spacingX = 260;
-    var totalW1 = (cols1 - 1) * spacingX;
-    var startX1 = vw / 2 - totalW1 / 2 - view.x / view.scale;
-    var y1 = 400 - view.y / view.scale;
-
-    level1.forEach(function(c, i){
-      c.x = startX1 + i * spacingX - c.w / 2;
-      c.y = y1;
-    });
-
-    // Level 2 : sous level1
-    if(level2.length){
-      var cols2 = level2.length;
-      var totalW2 = (cols2 - 1) * spacingX;
-      var startX2 = vw / 2 - totalW2 / 2 - view.x / view.scale;
-      var y2 = 640 - view.y / view.scale;
-      level2.forEach(function(c, i){
-        c.x = startX2 + i * spacingX - c.w / 2;
-        c.y = y2;
-      });
-    }
-
-    cards.forEach(positionCard);
-    // Ajuster la taille du SVG
-    var maxY = 0, maxX = 0;
-    cards.forEach(function(c){ maxY = Math.max(maxY, c.y + c.h + 200); maxX = Math.max(maxX, c.x + c.w + 200); });
-    edgesSvg.setAttribute('width', Math.max(3000, maxX));
-    edgesSvg.setAttribute('height', Math.max(2500, maxY));
-    updateAllEdges();
-  }
-
-  function layoutRadialLayout(){
-    var root = cards[0];
-    if(!root) return;
-
-    var vw = graphWrap.clientWidth;
-    var vh = graphWrap.clientHeight;
-
-    var cx = vw / 2 - root.w / 2 - view.x / view.scale;
-    var cy = vh / 2 - root.h / 2 - view.y / view.scale;
-    root.x = cx;
-    root.y = cy;
-
-    var others = cards.filter(function(c){ return c !== root; });
-    var n = others.length;
-    var radius = Math.min(vw, vh) * 0.32;
-    var angleStep = (Math.PI * 2) / Math.max(1, n);
-
-    others.forEach(function(c, i){
-      var angle = -Math.PI / 2 + i * angleStep;
-      c.x = cx + root.w / 2 - c.w / 2 + Math.cos(angle) * radius;
-      c.y = cy + root.h / 2 - c.h / 2 + Math.sin(angle) * radius;
-    });
-
-    cards.forEach(positionCard);
-    edgesSvg.setAttribute('width', Math.max(3000, vw * 2));
-    edgesSvg.setAttribute('height', Math.max(2500, vh * 2));
-    updateAllEdges();
-  }
-
-  function applyLayout(){
-    if(currentLayout === 'tree') layoutTreeLayout();
-    else layoutRadialLayout();
-  }
-
-  /* ---------- Génération des données ---------- */
-  function detectCountry(num){
-    var clean = num.replace(/[\s\-\(\)]/g,'');
-    if(clean.startsWith('+33') || clean.startsWith('0033')) return { code:'FR', name:'France', flag:'🇫🇷', prefix:'+33' };
-    if(clean.startsWith('+1'))   return { code:'US', name:'États-Unis', flag:'🇺🇸', prefix:'+1' };
-    if(clean.startsWith('+44'))  return { code:'GB', name:'Royaume-Uni', flag:'🇬🇧', prefix:'+44' };
-    if(clean.startsWith('+49'))  return { code:'DE', name:'Allemagne', flag:'🇩🇪', prefix:'+49' };
-    if(clean.startsWith('+34'))  return { code:'ES', name:'Espagne', flag:'🇪🇸', prefix:'+34' };
-    if(clean.startsWith('+39'))  return { code:'IT', name:'Italie', flag:'🇮🇹', prefix:'+39' };
-    if(clean.startsWith('+32'))  return { code:'BE', name:'Belgique', flag:'🇧🇪', prefix:'+32' };
-    if(clean.startsWith('+41'))  return { code:'CH', name:'Suisse', flag:'🇨🇭', prefix:'+41' };
-    return { code:'??', name:'Inconnu', flag:'🌍', prefix:'+' };
-  }
-
-  function detectOperator(num, country){
-    var clean = num.replace(/[\s\-\(\)]/g,'');
-    var m;
-    if(country.code === 'FR'){
-      m = clean.match(/^(\+33|0033)([67])(\d{8})$/);
-      if(m){
-        return { name:'Orange', tone:'amber', tech:'GSM / LTE / 5G', mccmnc:'208-01' };
-      }
-      m = clean.match(/^(\+33|0033)([67])(\d{8})$/);
-    }
-    if(country.code === 'US'){
-      return { name:'Verizon Wireless', tone:'', tech:'CDMA / LTE / 5G', mccmnc:'310-012' };
-    }
-    if(country.code === 'GB'){
-      return { name:'EE', tone:'', tech:'GSM / LTE / 5G', mccmnc:'234-30' };
-    }
-    if(country.code === 'DE'){
-      return { name:'Telekom', tone:'', tech:'GSM / LTE / 5G', mccmnc:'262-01' };
-    }
-    return { name:'Opérateur inconnu', tone:'warn', tech:'—', mccmnc:'—' };
-  }
-
-  function formatNumber(num){
-    var clean = num.replace(/[\s\-\(\)]/g,'');
-    if(clean.startsWith('+33') && clean.length === 12){
-      return '+33 ' + clean[3] + ' ' + clean.slice(4).replace(/(\d{2})(?=\d)/g,'$1 ');
-    }
-    return num;
-  }
-
-  function fakeLineType(num){
-    var last = num.replace(/\D/g,'').slice(-1);
-    if(parseInt(last) % 3 === 0) return { text:'Mobile', cls:'good' };
-    if(parseInt(last) % 3 === 1) return { text:'Fixe', cls:'' };
-    return { text:'VoIP', cls:'hi' };
-  }
-
-  function buildGraph(num){
-    var country = detectCountry(num);
-    var op = detectOperator(num, country);
-    var lineType = fakeLineType(num);
-    var clean = num.replace(/[\s\-\(\)]/g,'');
-    var last4 = clean.slice(-4);
-    var isActive = (parseInt(last4[0]) % 5 !== 0);
-
-    // Racine
-    var root = createCard({
-      title: formatNumber(num),
-      sub: 'Numéro cible',
-      icon: 'phone',
-      tone: '',
-      badge: { text: isActive ? 'Actif' : 'Inactif', tone: isActive ? 'live' : 'dead' },
-      rows: [
-        { k: 'Pays', v: country.flag + ' ' + country.name, cls: '' },
-        { k: 'Indicatif', v: country.prefix, cls: 'hi' },
-        { k: 'Format E.164', v: clean, cls: '' }
-      ],
-      reliability: { value: 92, tone: '', label: 'Confiance' },
-      parent: null
-    });
-
-    // Fils — opérateur
-    var opCard = createCard({
-      title: op.name,
-      sub: 'Opérateur',
-      icon: 'signal',
-      tone: op.tone,
-      rows: [
-        { k: 'Techno', v: op.tech, cls: '' },
-        { k: 'MCC-MNC', v: op.mccmnc, cls: 'hi' },
-        { k: 'Pays', v: country.code, cls: '' }
-      ],
-      reliability: { value: 88, tone: 'amber', label: 'Attribution' },
-      parent: 'root'
-    });
-
-    // Statut
-    var statusCard = createCard({
-      title: 'Statut ligne',
-      sub: 'État temps réel',
-      icon: 'wifi',
-      tone: isActive ? 'green' : 'red',
-      badge: { text: isActive ? 'En service' : 'Hors service', tone: isActive ? 'live' : 'dead' },
-      rows: [
-        { k: 'Dernier signal', v: isActive ? 'il y a 2 min' : 'il y a 47 j', cls: isActive ? 'good' : 'bad' },
-        { k: 'Itinérance', v: isActive ? 'Non' : '—', cls: '' },
-        { k: 'Portabilité', v: 'Conservé', cls: 'good' }
-      ],
-      reliability: { value: isActive ? 96 : 71, tone: isActive ? 'green' : '', label: 'Fraîcheur' },
-      parent: 'root'
-    });
-
-    // Type de ligne
-    var typeCard = createCard({
-      title: 'Type de ligne',
-      sub: 'Classification',
-      icon: 'sim',
-      tone: 'blue',
-      rows: [
-        { k: 'Catégorie', v: lineType.text, cls: lineType.cls },
-        { k: 'Préfixe', v: clean.slice(0, 5), cls: '' },
-        { k: 'Bloc', v: clean.slice(0, 8) + '…', cls: '' }
-      ],
-      reliability: { value: 84, tone: 'blue', label: 'Classification' },
-      parent: 'root'
-    });
-
-    // Localisation
-    var cities = ['Paris','Lyon','Marseille','Bordeaux','Lille','Toulouse','Nantes','Nice'];
-    var city = cities[parseInt(last4) % cities.length];
-    var locCard = createCard({
-      title: city,
-      sub: 'Zone d\'attribution',
-      icon: 'globe',
-      tone: 'purple',
-      rows: [
-        { k: 'Région', v: country.code + '-IDF', cls: '' },
-        { k: 'Fuseau', v: 'UTC+1', cls: 'hi' },
-        { k: 'Zone', v: 'Urbaine', cls: '' }
-      ],
-      reliability: { value: 76, tone: 'blue', label: 'Géoloc' },
-      parent: 'root'
-    });
-
-    // Appareil
-    var devices = ['iPhone 14 Pro','Samsung Galaxy S23','Google Pixel 8','Xiaomi 13','OnePlus 11'];
-    var device = devices[parseInt(last4[1] || '0') % devices.length];
-    var devCard = createCard({
-      title: device,
-      sub: 'Appareil détecté',
-      icon: 'device',
-      tone: '',
-      rows: [
-        { k: 'OS', v: device.indexOf('iPhone') >= 0 ? 'iOS 17.4' : 'Android 14', cls: '' },
-        { k: 'Dernière vue', v: isActive ? 'Aujourd\'hui' : 'Avr. 2026', cls: isActive ? 'good' : 'warn' },
-        { k: 'SIM', v: 'eSIM', cls: 'hi' }
-      ],
-      reliability: { value: 68, tone: 'amber', label: 'Estim.' },
-      parent: 'root'
-    });
-
-    // Entités liées
-    var entityCard = createCard({
-      title: '3 entités liées',
-      sub: 'Recoupements',
-      icon: 'link',
-      tone: 'blue',
-      rows: [
-        { k: 'Comptes', v: '2', cls: '' },
-        { k: 'Emails', v: '1', cls: 'hi' },
-        { k: 'Adresses', v: '1', cls: '' }
-      ],
-      reliability: { value: 81, tone: 'blue', label: 'Corrélation' },
-      parent: 'root'
-    });
-
-    // Historique
-    var histCard = createCard({
-      title: 'Historique',
-      sub: 'Portabilité / changements',
-      icon: 'clock',
-      tone: '',
-      rows: [
-        { k: 'Création', v: '2019-03', cls: '' },
-        { k: 'Portages', v: '1', cls: 'warn' },
-        { k: 'Dernier op.', v: '2024-11', cls: '' }
-      ],
-      reliability: { value: 73, tone: 'amber', label: 'Traçabilité' },
-      parent: 'root'
-    });
-
-    // Risque
-    var riskCard = createCard({
-      title: isActive ? 'Risque faible' : 'Risque modéré',
-      sub: 'Analyse',
-      icon: isActive ? 'shield' : 'alert',
-      tone: isActive ? 'green' : 'amber',
-      badge: { text: isActive ? 'Sûr' : 'À vérifier', tone: isActive ? 'live' : 'warn' },
-      rows: [
-        { k: 'Spam reports', v: isActive ? '0' : '3', cls: isActive ? 'good' : 'warn' },
-        { k: 'Blacklist', v: 'Non', cls: 'good' },
-        { k: 'Score', v: isActive ? 'A' : 'C', cls: isActive ? 'good' : 'warn' }
-      ],
-      reliability: { value: isActive ? 90 : 65, tone: isActive ? 'green' : '', label: 'Score' },
-      parent: 'root'
-    });
-
-    // Connecteurs
-    var all = [opCard, statusCard, typeCard, locCard, devCard, entityCard, histCard, riskCard];
-    all.forEach(function(c){ createEdge(root, c); });
-
-    // Layout initial
-    requestAnimationFrame(function(){
-      // Forcer la mesure de hauteur
-      cards.forEach(function(c){ c.h = c.el.offsetHeight; c.w = c.el.offsetWidth; });
-      applyLayout();
-      fitView();
-    });
-  }
-
-  /* ---------- Fit view ---------- */
-  function fitView(){
-    if(cards.length === 0) return;
-    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    cards.forEach(function(c){
-      minX = Math.min(minX, c.x);
-      minY = Math.min(minY, c.y);
-      maxX = Math.max(maxX, c.x + c.w);
-      maxY = Math.max(maxY, c.y + c.h);
-    });
-    var pad = 120;
-    var bboxW = (maxX - minX) + pad * 2;
-    var bboxH = (maxY - minY) + pad * 2;
-    var vw = graphWrap.clientWidth;
-    var vh = graphWrap.clientHeight;
-    var scale = Math.min(vw / bboxW, vh / bboxH, 1.1);
-    scale = clamp(scale, 0.35, 1.1);
-    view.scale = scale;
-    view.x = (vw - bboxW * scale) / 2 - (minX - pad) * scale;
-    view.y = (vh - bboxH * scale) / 2 - (minY - pad) * scale;
-    applyView();
-  }
-
-  /* ---------- Scan / recherche ---------- */
-  var scanMessages = [
-    'Résolution du préfixe…',
-    'Interrogation des registres opérateur…',
-    'Croisement des bases publiques…',
-    'Détection du type de ligne…',
-    'Analyse du statut temps réel…',
-    'Corrélation des entités liées…',
-    'Calcul des scores de confiance…',
-    'Construction du graphe…'
-  ];
-
-  function runScan(callback){
-    scanOverlay.classList.add('open');
-    var i = 0;
-    var interval = setInterval(function(){
-      if(i < scanMessages.length){
-        scanText.innerHTML = scanMessages[i] + '<span class="cursor"></span>';
-        i++;
-      }
-    }, 260);
-
-    setTimeout(function(){
-      clearInterval(interval);
-      scanOverlay.classList.remove('open');
-      callback();
-    }, 260 * scanMessages.length + 200);
-  }
-
-  function clearGraph(){
-    cards.forEach(function(c){ c.el.remove(); });
-    edges.forEach(function(e){ e.el.remove(); e.glow.remove(); });
-    cards = [];
-    edges = [];
-    edgesSvg.innerHTML = '';
-    nodeIdCounter = 0;
-  }
-
-  function doSearch(){
-    var num = phoneInput.value.trim();
-    if(!num || num.replace(/\D/g,'').length < 6){
-      phoneInput.focus();
-      phoneInput.style.transition = 'transform 0.1s';
-      var shake = 0;
-      var shakeInt = setInterval(function(){
-        phoneInput.style.transform = 'translateX(' + (shake % 2 ? 4 : -4) + 'px)';
-        shake++;
-        if(shake > 5){ clearInterval(shakeInt); phoneInput.style.transform = ''; }
-      }, 50);
-      return;
-    }
-
-    graphWrap.classList.add('searching');
-    runScan(function(){
-      clearGraph();
-      buildGraph(num);
-      emptyState.classList.add('hidden');
-      graphWrap.classList.remove('searching');
-    });
-  }
-
-  searchBtn.addEventListener('click', doSearch);
-  phoneInput.addEventListener('keydown', function(e){
-    if(e.key === 'Enter') doSearch();
+  // Search & filter
+  let results = database.filter(record => {
+    const matchesQuery =
+      record.prenom.toLowerCase().includes(query) ||
+      record.nom.toLowerCase().includes(query) ||
+      record.email.toLowerCase().includes(query) ||
+      record.telephone.includes(query);
+
+    if (!matchesQuery) return false;
+
+    // Apply filters
+    if (filters.pays && !record.pays.toLowerCase().includes(filters.pays)) return false;
+    if (filters.ville && !record.ville.toLowerCase().includes(filters.ville)) return false;
+    if (filters.codePostal && !record.codePostal.includes(filters.codePostal)) return false;
+    if (filters.dept && !record.codePostal.startsWith(filters.dept)) return false;
+    if (filters.adresse && !record.adresse.toLowerCase().includes(filters.adresse)) return false;
+    if (filters.ip && !record.ip.includes(filters.ip)) return false;
+    if (filters.iban && !record.iban.toLowerCase().includes(filters.iban)) return false;
+    if (filters.annee && !record.annee.toString().includes(filters.annee)) return false;
+    if (filters.genre && !record.genre.toLowerCase().includes(filters.genre)) return false;
+    if (filters.fiabilite && record.fiabilite < filters.fiabilite) return false;
+
+    return true;
   });
 
-  document.querySelectorAll('.hint-chip').forEach(function(chip){
-    chip.addEventListener('click', function(){
-      phoneInput.value = chip.dataset.fill;
-      phoneInput.focus();
-    });
-  });
-
-  /* ---------- HUD ---------- */
-  layoutTree.addEventListener('click', function(){
-    currentLayout = 'tree';
-    layoutTree.classList.add('active');
-    layoutRadial.classList.remove('active');
-    // Recentrer la vue
-    view.x = 0; view.y = 0; view.scale = 1; applyView();
-    applyLayout();
-    fitView();
-  });
-
-  layoutRadial.addEventListener('click', function(){
-    currentLayout = 'radial';
-    layoutRadial.classList.add('active');
-    layoutTree.classList.remove('active');
-    view.x = 0; view.y = 0; view.scale = 1; applyView();
-    applyLayout();
-    fitView();
-  });
-
-  resetView.addEventListener('click', function(){
-    fitView();
-  });
-
-  clearBtn.addEventListener('click', function(){
-    clearGraph();
-    emptyState.classList.remove('hidden');
-  });
-
-  /* ---------- Redimensionnement ---------- */
-  window.addEventListener('resize', function(){
-    if(cards.length) applyLayout();
-  });
-
-  /* ---------- Modales ---------- */
-  function openModal(id){
-    var el = document.getElementById(id);
-    if(!el) return;
-    el.classList.add('open');
+  // Display results
+  const container = document.getElementById('resultsContainer');
+  if (results.length === 0) {
+    container.innerHTML = '<div class="no-results">Aucun résultat trouvé</div>';
+    return;
   }
-  function closeModal(id){
-    var el = document.getElementById(id);
-    if(!el) return;
-    el.classList.remove('open');
+
+  container.innerHTML = results.map(r => `
+    <div class="result-card">
+      <h3>${r.prenom} ${r.nom}</h3>
+      <div class="result-field">
+        <span class="result-label">Email</span>
+        <span class="result-value">${r.email}</span>
+      </div>
+      <div class="result-field">
+        <span class="result-label">Téléphone</span>
+        <span class="result-value">${r.telephone}</span>
+      </div>
+      <div class="result-field">
+        <span class="result-label">Localisation</span>
+        <span class="result-value">${r.ville}, ${r.codePostal} - ${r.pays}</span>
+      </div>
+      <div class="result-field">
+        <span class="result-label">Adresse IP</span>
+        <span class="result-value">${r.ip}</span>
+      </div>
+      <div class="result-field">
+        <span class="result-label">Année Naissance</span>
+        <span class="result-value">${r.annee}</span>
+      </div>
+      <div class="result-field">
+        <span class="result-label">Fiabilité</span>
+        <span class="result-value">${r.fiabilite}%</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// === ADMIN PANEL ===
+function goToAdmin() {
+  if (!currentUser.isAdmin) {
+    alert('Accès réservé aux admins');
+    return;
   }
-  document.getElementById('aboutBtn').addEventListener('click', function(){ openModal('aboutModal'); });
-  document.getElementById('legalBtn').addEventListener('click', function(){ openModal('legalModal'); });
-  document.querySelectorAll('.modal-close').forEach(function(btn){
-    btn.addEventListener('click', function(){ closeModal(btn.getAttribute('data-close')); });
-  });
-  document.querySelectorAll('.modal-overlay').forEach(function(ov){
-    ov.addEventListener('click', function(e){
-      if(e.target === ov) ov.classList.remove('open');
-    });
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape'){
-      document.querySelectorAll('.modal-overlay.open').forEach(function(m){ m.classList.remove('open'); });
-    }
-  });
+  refreshAdminTable();
+  showScreen('adminScreen');
+}
 
-  /* ---------- Init ---------- */
-  applyView();
-  // Pré-remplir avec le numéro par défaut, mais ne pas lancer automatiquement
-  // L'utilisateur clique "Analyser" (ou Entrée) pour voir le graphe.
-  // Pour une démo plus fluide, on peut lancer une fois après 600ms :
-  setTimeout(function(){
-    if(!cards.length) doSearch();
-  }, 700);
+function backToSearch() {
+  showScreen('searchScreen');
+}
 
-})();
+function addRecord() {
+  if (!currentUser.isAdmin) return;
+
+  const record = {
+    prenom: document.getElementById('adminPrenom').value,
+    nom: document.getElementById('adminNom').value,
+    email: document.getElementById('adminEmail').value,
+    telephone: document.getElementById('adminTel').value,
+    ville: document.getElementById('adminVille').value,
+    pays: document.getElementById('adminPays').value,
+    codePostal: document.getElementById('adminCP').value,
+    adresse: document.getElementById('adminAdresse')?.value || '',
+    ip: document.getElementById('adminIP').value,
+    iban: document.getElementById('adminIBAN')?.value || '',
+    annee: parseInt(document.getElementById('adminAnnee').value) || 0,
+    genre: document.getElementById('adminGenre')?.value || '',
+    fiabilite: parseInt(document.getElementById('adminFiabilite').value) || 90
+  };
+
+  if (!record.prenom || !record.nom || !record.email) {
+    alert('Remplis au minimum: Prénom, Nom, Email');
+    return;
+  }
+
+  database.push(record);
+  saveDatabase();
+  
+  // Clear form
+  document.getElementById('adminPrenom').value = '';
+  document.getElementById('adminNom').value = '';
+  document.getElementById('adminEmail').value = '';
+  document.getElementById('adminTel').value = '';
+  document.getElementById('adminVille').value = '';
+  document.getElementById('adminPays').value = '';
+  document.getElementById('adminCP').value = '';
+  document.getElementById('adminIP').value = '';
+  document.getElementById('adminAnnee').value = '';
+  document.getElementById('adminFiabilite').value = '';
+
+  showSuccess();
+  refreshAdminTable();
+}
+
+function deleteRecord(index) {
+  if (!currentUser.isAdmin || !confirm('Confirmer la suppression?')) return;
+  database.splice(index, 1);
+  saveDatabase();
+  showSuccess();
+  refreshAdminTable();
+}
+
+function refreshAdminTable() {
+  const tbody = document.getElementById('adminTable');
+  if (database.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #8f8f99;">Aucune donnée</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = database.map((r, i) => `
+    <tr>
+      <td>${r.prenom}</td>
+      <td>${r.nom}</td>
+      <td>${r.email}</td>
+      <td>${r.telephone}</td>
+      <td>${r.ville}</td>
+      <td><button class="btn-delete" onclick="deleteRecord(${i})">Supprimer</button></td>
+    </tr>
+  `).join('');
+}
+
+function exportDatabase() {
+  const json = JSON.stringify(database, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `seekit-backup-${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showSuccess();
+}
+
+function clearDatabase() {
+  if (!confirm('Vider TOUTE la base? (irréversible)')) return;
+  database = [];
+  saveDatabase();
+  showSuccess();
+  refreshAdminTable();
+}
+
+function showSuccess() {
+  const msg = document.getElementById('successMsg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.getElementById('searchScreen').classList.contains('active')) {
+    search();
+  }
+});
+
+// Initialize on load
+window.addEventListener('load', initDatabase);
 </script>
 
 </body>
