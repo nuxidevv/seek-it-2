@@ -49,7 +49,6 @@
   }
   body.modal-open { overflow:hidden; }
 
-  /* ===== CANVAS PARTICULES ===== */
   #particleCanvas {
     position:fixed;
     inset:0;
@@ -68,7 +67,6 @@
   .toast-container { z-index:300; }
   .login-screen { z-index:1000; }
 
-  /* ===== ANIMATIONS ===== */
   @keyframes fadeInUp {
     from { opacity:0; transform:translateY(12px); }
     to { opacity:1; transform:translateY(0); }
@@ -98,7 +96,6 @@
   button { font-family:inherit; cursor:pointer; }
   input, textarea, select { font-family:inherit; }
 
-  /* ===== LOGIN ===== */
   .login-screen {
     position:fixed; inset:0;
     background:rgba(0,0,0,0.85);
@@ -160,7 +157,6 @@
     line-height:1.6;
   }
 
-  /* ===== NAV ===== */
   nav.topbar {
     position:fixed; top:0; left:0; right:0;
     z-index:100;
@@ -239,7 +235,6 @@
     max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
 
-  /* ===== MAIN ===== */
   main { position:relative; }
   .container { max-width:920px; margin:0 auto; padding:0 24px; }
 
@@ -304,7 +299,6 @@
     animation:fadeInUp 0.6s ease-out 0.15s backwards;
   }
 
-  /* ===== INPUT AVEC LOUPE VISIBLE ===== */
   .input-wrap {
     position:relative;
     margin-bottom:10px;
@@ -337,7 +331,7 @@
     -webkit-backdrop-filter:blur(8px);
     border:1px solid var(--border);
     color:var(--text);
-    padding:14px 100px 14px 48px;
+    padding:14px 46px 14px 48px;
     border-radius:var(--radius-pill);
     font-size:0.9rem;
     outline:none;
@@ -346,15 +340,14 @@
     appearance:none;
     position:relative;
     z-index:1;
+    text-overflow:ellipsis;
   }
   input#target::placeholder { color:var(--text-3); }
   input#target:focus {
     border-color:var(--accent-border);
     box-shadow:0 0 0 3px rgba(0,196,106,0.08);
   }
-  input#target:focus + .input-type-badge ~ * {} /* noop */
 
-  /* Focus : la loupe devient verte */
   .input-wrap:focus-within .input-icon circle,
   .input-wrap:focus-within .input-icon line {
     stroke:var(--accent);
@@ -1119,6 +1112,8 @@
     .nav-btn.hide-mobile { display:none; }
     .modal { padding:20px; }
     .modal-overlay { padding:40px 12px 20px; }
+    input#target { font-size:0.82rem; padding:13px 46px 13px 44px; }
+    input#target::placeholder { font-size:0.82rem; }
   }
 </style>
 </head>
@@ -2340,9 +2335,9 @@ const HEADER_MAP = {
   "annee_naissance":"annee_naissance","anneenaissance":"annee_naissance","birth_year":"annee_naissance","year":"annee_naissance",
   "date_naissance":"date_naissance","birthdate":"date_naissance","birthday":"date_naissance","dob":"date_naissance",
   "genre":"genre","sexe":"genre","gender":"genre","sex":"genre",
-  "nom_utilisateur":"nom_utilisateur","username":"nom_utilisateur","pseudo":"nom_utilisateur","nickname":"nom_utilisateur",
-  "adresse_ip":"adresse_ip","ip":"adresse_ip","ip_address":"adresse_ip",
-  "iban":"iban","bic":"bic"
+  "nom_utilisateur":"nom_utilisateur","username":"nom_utilisateur","pseudo":"nom_utilisateur","",
+nickname":"nom_utilisateur",
+  "adresse_ip":"adresse_ip","ip":"adresse_ip","ip_address":"adresse_ip  "iban":"iban","bic":"bic"
 };
 
 function normalizeKey(k) {
@@ -2403,7 +2398,7 @@ function parseTXT(text) {
       if (parts.length >= 2) obj.nom_famille = parts[1];
       if (parts.length >= 3 && !obj.email) obj.email = parts[2];
       if (parts.length >= 4 && !obj.telephone) obj.telephone = parts[3];
-      if (parts.length >= 5) obj.ville = parts[4];
+      if (parts.length >= 5) obj.ville = parts[4forEach];
       if (Object.keys(obj).length > 0) entries.push(normalizeEntry(obj));
     } else {
       const em = line.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
@@ -2415,7 +2410,7 @@ function parseTXT(text) {
 }
 function parseNDJSON(text) {
   const entries = [];
-  text.split(/\r?\n/).forEach(line => {
+  text.split(/\r?\n/).(line => {
     const t = line.trim();
     if (!t) return;
     try {
