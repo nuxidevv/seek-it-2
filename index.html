@@ -1286,14 +1286,13 @@
 
 <script>
 /* ============================================================
-   CONFIGURATION — MODIFIE CES 3 LIGNES
+   CONFIGURATION — MODIFIE CES 2 LIGNES
    ============================================================ */
 const DISCORD_CLIENT_ID = "1553737753894850640";
 const DISCORD_REDIRECT  = "https://seekit2.vercel.app/";
 const ADMIN_DISCORD_IDS = [
   "1535798111799091250",
   "1454894309500256452"
-  // Ajoute autant de lignes que tu veux, séparées par une virgule
 ];
 /* ============================================================ */
 
@@ -1477,7 +1476,8 @@ function showMain(user) {
   document.getElementById("userAvatar").src = user.avatar;
   document.getElementById("userName").textContent = user.global_name || user.username;
 
-  if (String(user.id) === String(ADMIN_DISCORD_ID)) {
+  // Vérification admin (multi-ID)
+  if (ADMIN_DISCORD_IDS.map(String).includes(String(user.id))) {
     document.getElementById("adminBtn").style.display = "inline-flex";
   }
   refreshStats();
