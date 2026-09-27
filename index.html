@@ -1236,7 +1236,7 @@
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
           <div class="drop-zone-title">Glisse tes fichiers ici</div>
-          <div class="drop-zone-sub">ou clique pour parcourir — accepte .json, .txt, .csv, .sql, .ndjson</div>
+          <div class="drop-zone-sub">ou clique pour parcourir — accepte .json, .txt, .csv, .sql, .ndjson (max 200 Mo)</div>
         </div>
 
         <div class="file-list" id="fileList"></div>
@@ -1298,7 +1298,124 @@ const ADMIN_DISCORD_IDS = [
 
 const SCOPES = "identify";
 const LS_USER = "seekit-user";
-const LS_DBS  = "seekit-databases";
+const LS_DBS_LEGACY = "seekit-databases"; // ancien localStorage (migration)
+const IDB_NAME = "seekit-db";
+const IDB_VERSION = 1;
+const IDB_STORE = "databases";
+
+/* ===== INDEXEDDB WRAPPER ===== */
+let _idbPromise = null;
+function openIDB() {
+  if (_idbPromise) return _idbPromise;
+  _idbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: "id", autoIncrement: true });
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+  return _idbPromise;
+}
+
+async function idbGetAll() {
+  const db = await openIDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readonly");
+    const store = tx.objectStore(IDB_STORE);
+    const req = store.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbAdd(entry) {
+  const db = await openIDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    const store = tx.objectStore(IDB_STORE);
+    const req = store.add(entry);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbDelete(id) {
+  const db = await openIDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    const store = tx.objectStore(IDB_STORE);
+    const req = store.delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbCount() {
+  const db = await openIDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readonly");
+    const store = tx.objectStore(IDB_STORE);
+    const req = store.count();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/* ===== DATABASES API (asynchrone via IndexedDB) ===== */
+let _dbsCache = null;
+
+async function loadDatabasesAsync() {
+  try {
+    const rows = await idbGetAll();
+    _dbsCache = rows.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    return _dbsCache;
+  } catch (e) {
+    console.error("IndexedDB load error", e);
+    return [];
+  }
+}
+
+function getCachedDatabases() {
+  return _dbsCache || [];
+}
+
+async function addDatabase(db) {
+  await idbAdd({ name: db.name, entries: db.entries, source: db.source, ts: db.ts || Date.now() });
+  await loadDatabasesAsync();
+}
+
+async function deleteDatabaseById(id) {
+  await idbDelete(id);
+  await loadDatabasesAsync();
+}
+
+function totalEntries(dbs) {
+  return (dbs || []).reduce((acc, db) => acc + (Array.isArray(db.entries) ? db.entries.length : 0), 0);
+}
+
+/* ===== MIGRATION ancien localStorage → IndexedDB ===== */
+async function migrateLegacyIfAny() {
+  let legacy = null;
+  try { legacy = JSON.parse(localStorage.getItem(LS_DBS_LEGACY) || "null"); } catch {}
+  if (!Array.isArray(legacy) || legacy.length === 0) return;
+  const existing = await idbGetAll();
+  if (existing.length > 0) {
+    // Déjà migré, on supprime juste l'ancien
+    try { localStorage.removeItem(LS_DBS_LEGACY); } catch {}
+    return;
+  }
+  for (const db of legacy) {
+    try {
+      await idbAdd({ name: db.name || "Import", entries: db.entries || [], source: db.source || "Migration", ts: db.ts || Date.now() });
+    } catch (e) { console.error("Migration error", e); }
+  }
+  try { localStorage.removeItem(LS_DBS_LEGACY); } catch {}
+  toast(`Migration : ${legacy.length} database(s) transférée(s) vers IndexedDB`, "success", 4000);
+}
 
 /* ===== PREFS ===== */
 const prefs = { particles: true };
@@ -1454,19 +1571,8 @@ async function handleOAuthCallback() {
   }
 }
 
-/* ===== DATABASES ===== */
-function loadDatabases() {
-  try { return JSON.parse(localStorage.getItem(LS_DBS) || "[]"); } catch { return []; }
-}
-function saveDatabases(dbs) {
-  try { localStorage.setItem(LS_DBS, JSON.stringify(dbs)); } catch {}
-}
-function totalEntries(dbs) {
-  return dbs.reduce((acc, db) => acc + (Array.isArray(db.entries) ? db.entries.length : 0), 0);
-}
-
 /* ===== UI ===== */
-function showMain(user) {
+async function showMain(user) {
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("topbar").style.display = "flex";
   document.getElementById("mainContent").style.display = "block";
@@ -1476,15 +1582,18 @@ function showMain(user) {
   document.getElementById("userAvatar").src = user.avatar;
   document.getElementById("userName").textContent = user.global_name || user.username;
 
-  // Vérification admin (multi-ID)
   if (ADMIN_DISCORD_IDS.map(String).includes(String(user.id))) {
     document.getElementById("adminBtn").style.display = "inline-flex";
   }
+
+  // Migration puis chargement
+  await migrateLegacyIfAny();
+  await loadDatabasesAsync();
   refreshStats();
 }
 
-function refreshStats() {
-  const dbs = loadDatabases();
+async function refreshStats() {
+  const dbs = getCachedDatabases();
   document.getElementById("dbCount").textContent = dbs.length;
   document.getElementById("entriesCount").textContent = totalEntries(dbs).toLocaleString("fr-FR");
 }
@@ -1561,7 +1670,7 @@ Object.values(FILTER_IDS).forEach(id => {
 function normalize(s) { return String(s ?? "").toLowerCase().trim(); }
 
 function searchInDatabases(query, filters) {
-  const dbs = loadDatabases();
+  const dbs = getCachedDatabases();
   const allEntries = [];
   dbs.forEach(db => {
     if (Array.isArray(db.entries)) {
@@ -1721,9 +1830,13 @@ document.getElementById("userChip").addEventListener("click", () => {
 document.getElementById("settingsToggle").addEventListener("click", () => openModal("settingsModal"));
 document.getElementById("aboutLink").addEventListener("click", () => openModal("aboutModal"));
 document.getElementById("aboutLink2").addEventListener("click", () => openModal("aboutModal"));
-document.getElementById("adminBtn").addEventListener("click", () => { renderAdminDbList(); openModal("adminModal"); });
+document.getElementById("adminBtn").addEventListener("click", async () => {
+  await loadDatabasesAsync();
+  renderAdminDbList();
+  openModal("adminModal");
+});
 
-document.getElementById("clearCacheBtn").addEventListener("click", () => {
+document.getElementById("clearCacheBtn").addEventListener("click", async () => {
   try { localStorage.removeItem("seekit-prefs"); localStorage.removeItem("seekit-sound"); } catch {}
   toast("Cache vidé — rechargement…", "success", 1500);
   setTimeout(() => location.reload(), 800);
@@ -1782,8 +1895,8 @@ document.getElementById("go").addEventListener("click", () => {
 /* ===== ADMIN PANEL ===== */
 let pendingFiles = [];
 
-function renderAdminDbList() {
-  const dbs = loadDatabases();
+async function renderAdminDbList() {
+  const dbs = getCachedDatabases();
   const list = document.getElementById("adminDbList");
   document.getElementById("adminDbCount").textContent = dbs.length;
   if (dbs.length === 0) {
@@ -1796,7 +1909,7 @@ function renderAdminDbList() {
         <div class="db-name">${escapeHtml(db.name)}</div>
         <div class="db-meta">${db.entries.length} entrées • ${db.source || "JSON"} • ${new Date(db.ts).toLocaleDateString("fr-FR")}</div>
       </div>
-      <div class="db-delete" data-idx="${i}" title="Supprimer">
+      <div class="db-delete" data-id="${db.id}" title="Supprimer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"></polyline>
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1805,15 +1918,17 @@ function renderAdminDbList() {
     </div>
   `).join("");
   list.querySelectorAll(".db-delete").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.getAttribute("data-idx"));
+    btn.addEventListener("click", async () => {
+      const id = Number(btn.getAttribute("data-id"));
       if (!confirm("Supprimer cette database ?")) return;
-      const dbs2 = loadDatabases();
-      dbs2.splice(idx, 1);
-      saveDatabases(dbs2);
-      renderAdminDbList();
-      refreshStats();
-      toast("Database supprimée", "success", 1500);
+      try {
+        await deleteDatabaseById(id);
+        await renderAdminDbList();
+        refreshStats();
+        toast("Database supprimée", "success", 1500);
+      } catch (e) {
+        toast("Erreur suppression : " + e.message, "error");
+      }
     });
   });
 }
@@ -1981,7 +2096,7 @@ function renderFileList() {
     <div class="file-item">
       <div class="file-item-info">
         <div class="file-item-name">${escapeHtml(f.name)}</div>
-        <div class="file-item-meta">${(f.size / 1024).toFixed(1)} Ko • ${f.entries.length} entrées détectées</div>
+        <div class="file-item-meta">${(f.size / 1024 / 1024).toFixed(2)} Mo • ${f.entries.length} entrées détectées</div>
       </div>
       <div class="file-item-remove" data-idx="${i}" title="Retirer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -2014,8 +2129,8 @@ fileInput.addEventListener("change", () => {
 
 async function handleFiles(fileList) {
   for (const file of fileList) {
-    if (file.size > 50 * 1024 * 1024) {
-      toast(`« ${file.name} » trop volumineux (>50 Mo)`, "error");
+    if (file.size > 200 * 1024 * 1024) {
+      toast(`« ${file.name} » trop volumineux (>200 Mo)`, "error");
       continue;
     }
     try {
@@ -2040,28 +2155,31 @@ document.getElementById("adminClearFilesBtn").addEventListener("click", () => {
   toast("Liste vidée", "success", 1200);
 });
 
-document.getElementById("adminUploadBtn").addEventListener("click", () => {
+document.getElementById("adminUploadBtn").addEventListener("click", async () => {
   if (pendingFiles.length === 0) { toast("Aucun fichier à importer", "error"); return; }
   const name = document.getElementById("adminDbName").value.trim() || "Import " + new Date().toLocaleString("fr-FR");
-  const dbs = loadDatabases();
   let total = 0;
-  pendingFiles.forEach(f => {
-    dbs.push({
-      name: pendingFiles.length > 1 ? `${name} — ${f.name}` : name,
-      entries: f.entries,
-      source: "Fichier " + f.name.split(".").pop().toUpperCase(),
-      ts: Date.now()
-    });
-    total += f.entries.length;
-  });
-  saveDatabases(dbs);
-  pendingFiles = [];
-  renderFileList();
-  document.getElementById("adminDbName").value = "";
-  renderAdminDbList();
-  refreshStats();
-  toast(`✅ ${total} entrées importées`, "success");
-  playSound("ding");
+  try {
+    for (const f of pendingFiles) {
+      await addDatabase({
+        name: pendingFiles.length > 1 ? `${name} — ${f.name}` : name,
+        entries: f.entries,
+        source: "Fichier " + f.name.split(".").pop().toUpperCase(),
+        ts: Date.now()
+      });
+      total += f.entries.length;
+    }
+    pendingFiles = [];
+    renderFileList();
+    document.getElementById("adminDbName").value = "";
+    await renderAdminDbList();
+    await refreshStats();
+    toast(`✅ ${total} entrées importées`, "success");
+    playSound("ding");
+  } catch (e) {
+    console.error(e);
+    toast("Erreur import : " + e.message + " (quota IndexedDB dépassé ?)", "error", 5000);
+  }
 });
 
 /* ===== ADMIN — JSON MANUEL ===== */
@@ -2074,7 +2192,7 @@ document.getElementById("adminFormatBtn").addEventListener("click", () => {
   } catch (e) { toast("JSON invalide : " + e.message, "error"); }
 });
 
-document.getElementById("adminAddBtn").addEventListener("click", () => {
+document.getElementById("adminAddBtn").addEventListener("click", async () => {
   const name = document.getElementById("adminDbName").value.trim() || "Import manuel";
   const data = document.getElementById("adminDbData").value.trim();
   if (!data) { toast("Colle des données JSON", "error"); return; }
@@ -2083,15 +2201,18 @@ document.getElementById("adminAddBtn").addEventListener("click", () => {
   catch (e) { toast("JSON invalide : " + e.message, "error"); return; }
   if (!Array.isArray(parsed)) { toast("Le JSON doit être un tableau", "error"); return; }
   const entries = parsed.map(normalizeEntry);
-  const dbs = loadDatabases();
-  dbs.push({ name, entries, source: "JSON manuel", ts: Date.now() });
-  saveDatabases(dbs);
-  document.getElementById("adminDbName").value = "";
-  document.getElementById("adminDbData").value = "";
-  renderAdminDbList();
-  refreshStats();
-  toast(`Database « ${name} » ajoutée (${entries.length} entrées)`, "success");
-  playSound("ding");
+  try {
+    await addDatabase({ name, entries, source: "JSON manuel", ts: Date.now() });
+    document.getElementById("adminDbName").value = "";
+    document.getElementById("adminDbData").value = "";
+    await renderAdminDbList();
+    await refreshStats();
+    toast(`Database « ${name} » ajoutée (${entries.length} entrées)`, "success");
+    playSound("ding");
+  } catch (e) {
+    console.error(e);
+    toast("Erreur ajout : " + e.message, "error", 5000);
+  }
 });
 
 /* ===== TYPEWRITER (corrigé) ===== */
@@ -2156,13 +2277,13 @@ document.getElementById("adminAddBtn").addEventListener("click", () => {
 (async function init() {
   const fresh = await handleOAuthCallback();
   if (fresh) {
-    showMain(fresh);
+    await showMain(fresh);
     toast(`Bienvenue ${fresh.global_name} !`, "success");
     return;
   }
   const stored = getStoredUser();
   if (stored && stored.id) {
-    showMain(stored);
+    await showMain(stored);
     return;
   }
 })();
