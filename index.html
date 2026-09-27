@@ -303,13 +303,32 @@
     max-width:600px; margin:0 auto;
     animation:fadeInUp 0.6s ease-out 0.15s backwards;
   }
-  .input-wrap { position:relative; margin-bottom:10px; }
+
+  /* ===== INPUT AVEC LOUPE VISIBLE ===== */
+  .input-wrap {
+    position:relative;
+    margin-bottom:10px;
+  }
   .input-wrap .input-icon {
-    position:absolute; left:18px; top:50%;
+    position:absolute;
+    left:18px;
+    top:50%;
     transform:translateY(-50%);
-    width:16px; height:16px;
-    color:var(--text-3);
+    width:18px;
+    height:18px;
+    color:var(--text-2);
     pointer-events:none;
+    z-index:5;
+    display:block;
+    stroke:currentColor;
+    fill:none;
+  }
+  .input-wrap .input-icon circle,
+  .input-wrap .input-icon line {
+    stroke:var(--text-2);
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
   }
   input#target {
     width:100%;
@@ -318,19 +337,29 @@
     -webkit-backdrop-filter:blur(8px);
     border:1px solid var(--border);
     color:var(--text);
-    padding:14px 100px 14px 46px;
+    padding:14px 100px 14px 48px;
     border-radius:var(--radius-pill);
     font-size:0.9rem;
     outline:none;
     transition:border-color 0.15s ease, box-shadow 0.2s ease;
     -webkit-appearance:none;
     appearance:none;
+    position:relative;
+    z-index:1;
   }
   input#target::placeholder { color:var(--text-3); }
   input#target:focus {
     border-color:var(--accent-border);
     box-shadow:0 0 0 3px rgba(0,196,106,0.08);
   }
+  input#target:focus + .input-type-badge ~ * {} /* noop */
+
+  /* Focus : la loupe devient verte */
+  .input-wrap:focus-within .input-icon circle,
+  .input-wrap:focus-within .input-icon line {
+    stroke:var(--accent);
+  }
+
   .input-type-badge {
     position:absolute; right:46px; top:50%;
     transform:translateY(-50%);
@@ -340,6 +369,7 @@
     color:var(--accent);
     display:none;
     pointer-events:none;
+    z-index:3;
   }
   .input-type-badge.visible { display:inline-block; }
   .input-clear {
@@ -352,6 +382,7 @@
     display:none; align-items:center; justify-content:center;
     transition:border-color 0.15s ease;
     -webkit-tap-highlight-color:transparent;
+    z-index:3;
   }
   .input-clear.visible { display:inline-flex; }
   .input-clear:hover { border-color:var(--border-strong); }
@@ -1164,8 +1195,8 @@
 
     <div class="search-container">
       <div class="input-wrap">
-        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
+        <svg class="input-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="11" cy="11" r="7.5"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
         <input id="target" placeholder="prénom nom, email ou téléphone" autocomplete="off" spellcheck="false">
@@ -1468,7 +1499,6 @@ const IDB_VERSION = 1;
 const IDB_STORE = "databases";
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
-/* ===== DÉTECTION iOS ===== */
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 /* ===== PARTICULES ===== */
@@ -1536,12 +1566,8 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platfo
     rafId = requestAnimationFrame(draw);
   }
 
-  function start() {
-    if (rafId === null) rafId = requestAnimationFrame(draw);
-  }
-  function stop() {
-    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
-  }
+  function start() { if (rafId === null) rafId = requestAnimationFrame(draw); }
+  function stop() { if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; } }
 
   resize();
   init();
@@ -1550,7 +1576,6 @@ const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platfo
     if (document.hidden) stop();
     else start();
   });
-  // iOS : relance après le swipe / scroll
   window.addEventListener("pageshow", () => start());
   start();
 })();
@@ -1776,12 +1801,10 @@ const ULP = {
   }
 };
 
-/* ===== PREFS ===== */
 const prefs = { particles: false };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem("seekit-prefs") || "{}")); } catch {}
 function savePrefs() { try { localStorage.setItem("seekit-prefs", JSON.stringify(prefs)); } catch {} }
 
-/* ===== TOASTS ===== */
 const toastContainer = document.getElementById("toastContainer");
 function toast(message, type = "success", duration = 3000) {
   const el = document.createElement("div");
@@ -1791,7 +1814,6 @@ function toast(message, type = "success", duration = 3000) {
   setTimeout(() => { el.classList.add("leaving"); setTimeout(() => el.remove(), 200); }, duration);
 }
 
-/* ===== SOUND ===== */
 let soundEnabled = true;
 try { soundEnabled = localStorage.getItem("seekit-sound") !== "off"; } catch {}
 let audioCtx = null;
@@ -1823,7 +1845,6 @@ function playSound(type) {
 }
 document.addEventListener("click", () => ensureAudio(), { once:true });
 
-/* ===== DISCORD OAUTH ===== */
 function getStoredUser() {
   try { return JSON.parse(localStorage.getItem(LS_USER) || "null"); } catch { return null; }
 }
@@ -1871,7 +1892,6 @@ async function handleOAuthCallback() {
   const params = new URLSearchParams(hash.substring(1));
   const token = params.get("access_token");
   if (!token) return null;
-  // Nettoyer l'URL immédiatement (avant tout await)
   try {
     history.replaceState(null, "", window.location.pathname + window.location.search);
   } catch (e) {
@@ -1897,7 +1917,6 @@ async function handleOAuthCallback() {
   }
 }
 
-/* ===== UI ===== */
 async function showMain(user) {
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("topbar").style.display = "flex";
@@ -1927,7 +1946,6 @@ function refreshStats() {
   }
 }
 
-/* ===== MODALS ===== */
 function openModal(id) {
   document.getElementById(id).classList.add("open");
   document.body.classList.add("modal-open");
@@ -1954,7 +1972,6 @@ document.addEventListener("keydown", e => {
   }
 });
 
-/* ===== SEARCH ===== */
 const TYPE_LABELS = { name:"Nom", email:"Email", phone:"Téléphone" };
 function detectType(v) {
   v = (v || "").trim();
@@ -2001,7 +2018,6 @@ Object.values(FILTER_IDS).forEach(id => {
   }
 });
 
-/* ===== SEARCH LOGIC ===== */
 function normalize(s) { return String(s ?? "").toLowerCase().trim(); }
 
 function searchInDatabases(query, filters) {
@@ -2047,7 +2063,6 @@ function searchInDatabases(query, filters) {
   });
 }
 
-/* ===== RENDER ===== */
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -2163,7 +2178,6 @@ function renderResults(items, t0) {
 }
 
 /* ===== EVENTS ===== */
-// Bouton Discord : double binding pour iOS
 (function bindDiscordBtn() {
   const btn = document.getElementById("discordLoginBtn");
   if (!btn) {
@@ -2225,7 +2239,6 @@ const scrollTopBtn = document.getElementById("scrollTop");
 window.addEventListener("scroll", () => scrollTopBtn.classList.toggle("visible", window.scrollY > 400));
 scrollTopBtn.addEventListener("click", () => window.scrollTo({ top:0, behavior:"smooth" }));
 
-/* ===== INPUT ===== */
 const input = document.getElementById("target");
 const inputClear = document.getElementById("inputClear");
 const inputTypeBadge = document.getElementById("inputTypeBadge");
@@ -2248,7 +2261,6 @@ inputClear.addEventListener("click", () => {
 });
 input.addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("go").click(); });
 
-/* ===== SEARCH BUTTON ===== */
 document.getElementById("go").addEventListener("click", () => {
   const query = input.value.trim();
   const filters = readFilters();
@@ -2275,7 +2287,6 @@ document.getElementById("go").addEventListener("click", () => {
   }, 60);
 });
 
-/* ===== ADMIN ===== */
 let pendingFiles = [];
 
 async function renderAdminDbList() {
@@ -2316,7 +2327,6 @@ async function renderAdminDbList() {
   });
 }
 
-/* ===== PARSERS ===== */
 const HEADER_MAP = {
   "prenom":"prenom","prénom":"prenom","first_name":"prenom","firstname":"prenom","first":"prenom","given_name":"prenom",
   "nom":"nom_famille","nom_famille":"nom_famille","last_name":"nom_famille","lastname":"nom_famille","last":"nom_famille","surname":"nom_famille","family_name":"nom_famille",
@@ -2461,7 +2471,6 @@ function parseFileContent(name, text) {
   catch { return parseTXT(text); }
 }
 
-/* ===== FILE UPLOAD ===== */
 const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
 const fileListEl = document.getElementById("fileList");
@@ -2556,7 +2565,6 @@ document.getElementById("adminUploadBtn").addEventListener("click", async () => 
   }
 });
 
-/* ===== TYPEWRITER ===== */
 (function typewriter() {
   const el = document.getElementById("typewriter");
   if (!el) return;
@@ -2603,7 +2611,6 @@ document.getElementById("adminUploadBtn").addEventListener("click", async () => 
   setTimeout(tick, 600);
 })();
 
-/* ===== INIT ===== */
 (async function init() {
   const fresh = await handleOAuthCallback();
   if (fresh) {
