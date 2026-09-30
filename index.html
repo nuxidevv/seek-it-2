@@ -506,15 +506,15 @@
 
     <div class="stats-row">
       <div class="stat">
-        <div class="stat-value" id="statBases">12 847 293 401</div>
+        <div class="stat-value">12 847 293 401</div>
         <div class="stat-label">Bases indexées</div>
       </div>
       <div class="stat">
-        <div class="stat-value" id="statEntrees">4 218 947 832</div>
+        <div class="stat-value">4 218 947 832</div>
         <div class="stat-label">Entrées actives</div>
       </div>
       <div class="stat">
-        <div class="stat-value" id="statRequetes">847 291</div>
+        <div class="stat-value">847 291</div>
         <div class="stat-label">Requêtes / 24h</div>
       </div>
     </div>
@@ -612,7 +612,7 @@
       <h3>Hébergement</h3>
       <p>Vercel Inc.</p>
       <h3>Données personnelles</h3>
-      <p>Aucune donnée n'est stockée sur nos serveurs. Les préférences restent dans votre navigateur.</p>
+      <p>Aucune donnée n'est stockée sur nos serveurs.</p>
       <h3>Contact</h3>
       <p><a href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">Notre Discord</a></p>
     </div>
@@ -624,66 +624,16 @@
 
 <script>
 /* ============================================================
-   SI search.js N'EST PAS TROUVÉ → mode démo automatique
+   FALLBACK si search.js absent
    ============================================================ */
 if (typeof window.dataClient === "undefined") {
-  console.warn("search.js introuvable, mode démo activé");
   window.dataClient = {
-    query: async (payload) => {
-      // Petites données de démo pour montrer que ça marche
-      const demo = [
-        { prenom:"Jean", nom_famille:"Dupont", email:"jean.dupont@exemple.fr", telephone:"06 12 34 56 78", ville:"Paris", code_postal:"75001", pays:"France", annee_naissance:"1985", genre:"M" },
-        { prenom:"Marie", nom_famille:"Martin", email:"marie.martin@exemple.fr", telephone:"06 23 45 67 89", ville:"Lyon", code_postal:"69001", pays:"France", annee_naissance:"1990", genre:"F" },
-        { prenom:"Pierre", nom_famille:"Bernard", email:"pierre.bernard@exemple.fr", telephone:"06 34 56 78 90", ville:"Marseille", code_postal:"13001", pays:"France", annee_naissance:"1978", genre:"M" },
-        { prenom:"Sophie", nom_famille:"Petit", email:"sophie.petit@exemple.fr", telephone:"06 45 67 89 01", ville:"Toulouse", code_postal:"31000", pays:"France", annee_naissance:"1992", genre:"F" },
-        { prenom:"Lucas", nom_famille:"Durand", email:"lucas.durand@exemple.fr", telephone:"06 56 78 90 12", ville:"Nice", code_postal:"06000", pays:"France", annee_naissance:"1988", genre:"M" },
-        { prenom:"Emma", nom_famille:"Leroy", email:"emma.leroy@exemple.fr", telephone:"06 67 89 01 23", ville:"Nantes", code_postal:"44000", pays:"France", annee_naissance:"1995", genre:"F" }
-      ];
-
-      const q = (payload.query || "").toLowerCase().trim();
-      const f = payload.filters || {};
-
-      return demo.filter(item => {
-        // Filtre texte
-        if (q) {
-          const prenom = (item.prenom || "").toLowerCase();
-          const nom = (item.nom_famille || "").toLowerCase();
-          const email = (item.email || "").toLowerCase();
-          const tel = (item.telephone || "").replace(/\D/g, "");
-
-          // Détection email
-          if (q.includes("@")) {
-            if (!email.includes(q)) return false;
-          }
-          // Détection téléphone
-          else if (/^\d[\d\s]{5,}$/.test(q)) {
-            const qd = q.replace(/\D/g, "");
-            if (!tel.includes(qd)) return false;
-          }
-          // Nom complet : les mots doivent tous être trouvés
-          else {
-            const words = q.split(/\s+/).filter(Boolean);
-            const haystack = `${prenom} ${nom} ${email}`;
-            const allFound = words.every(w => haystack.includes(w));
-            if (!allFound) return false;
-          }
-        }
-
-        // Filtres
-        for (const key of Object.keys(f)) {
-          const val = String(f[key]).toLowerCase();
-          const itemVal = String(item[key] || "").toLowerCase();
-          if (!itemVal.includes(val)) return false;
-        }
-
-        return true;
-      });
-    }
+    query: async () => { throw new Error("search.js introuvable"); }
   };
 }
 
 /* ============================================================
-   PARTICULES DÉCORATIVES
+   PARTICULES
    ============================================================ */
 (function particles() {
   const canvas = document.getElementById("particleCanvas");
@@ -732,10 +682,10 @@ if (typeof window.dataClient === "undefined") {
 })();
 
 /* ============================================================
-   NOTIFICATIONS (TOASTS)
+   TOASTS
    ============================================================ */
 const toastContainer = document.getElementById("toastContainer");
-function toast(msg, type = "success", duration = 3000) {
+function toast(msg, type = "success", duration = 3500) {
   const el = document.createElement("div");
   el.className = `toast ${type}`;
   el.textContent = msg;
@@ -824,7 +774,6 @@ function clearFilters() {
   updateFiltersCount();
 }
 
-// Écoute tous les champs de filtre
 Object.values(FILTER_IDS).forEach(id => {
   const el = document.getElementById(id);
   if (el) {
@@ -853,53 +802,57 @@ function escapeHtml(s) {
   }[m]));
 }
 
-// Détecte le type de recherche (email / tél / nom complet / mot simple)
-function detectType(v) {
-  v = (v || "").trim();
-  if (!v) return null;
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return "email";
-  const clean = v.replace(/[\s.\-()]/g, "");
-  if (/^\+?\d{6,}$/.test(clean) && !/^[a-zA-ZÀ-ÿ]/.test(v)) return "phone";
-  const words = v.split(/\s+/).filter(Boolean);
-  if (words.length >= 2) return "full";
-  return "single";
-}
-
 /* ============================================================
-   CONSTRUCTION DU PAYLOAD ENVOYÉ À L'API
+   CONSTRUCTION DU PAYLOAD POUR BRIXHUB
+   BrixHub attend directement : nom_famille, email, telephone, prenom...
    ============================================================ */
 function buildPayload(query, filters) {
   const q = (query || "").trim();
-  const type = detectType(q);
+  const payload = {};
 
-  const payload = {
-    query: q,
-    filters: { ...filters }
-  };
-
-  if (type === "email") {
-    payload.email = q.toLowerCase();
-  } else if (type === "phone") {
-    payload.telephone = q.replace(/\D/g, "");
-  } else if (type === "full") {
-    // "Jean Dupont" ou "Dupont Jean" → on envoie les deux combinaisons
-    const parts = q.split(/\s+/).filter(Boolean);
-    payload.prenom = parts[0];
-    payload.nom = parts.slice(1).join(" ");
-    payload.prenom_alt = parts[parts.length - 1];
-    payload.nom_alt = parts.slice(0, -1).join(" ");
-  } else if (type === "single") {
-    // "Jean" → on cherche dans prénom ET dans nom
-    payload.prenom = q;
-    payload.nom = q;
+  // Analyse du texte saisi
+  if (q) {
+    // Email
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(q)) {
+      payload.email = q.toLowerCase();
+    }
+    // Téléphone
+    else if (/^\+?[\d\s.\-()]{6,}$/.test(q) && !/^[a-zA-ZÀ-ÿ]/.test(q)) {
+      payload.telephone = q.replace(/\D/g, "");
+    }
+    // Nom complet ou mot simple
+    else {
+      const parts = q.split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) {
+        // "Jean Dupont" → prenom=Jean, nom_famille=Dupont
+        // On envoie aussi l'inverse au cas où
+        payload.prenom = parts[0];
+        payload.nom_famille = parts.slice(1).join(" ");
+        payload.prenom_alt = parts[parts.length - 1];
+        payload.nom_famille_alt = parts.slice(0, -1).join(" ");
+      } else {
+        // Un seul mot → on essaie dans nom_famille (le plus courant)
+        payload.nom_famille = parts[0];
+      }
+    }
   }
 
+  // Ajoute les filtres (mêmes noms que BrixHub)
+  Object.keys(filters).forEach(k => {
+    if (filters[k]) payload[k] = filters[k];
+  });
+
+  // Vérifie qu'il y a au moins un champ valide
+  const champs = ["nom_famille","prenom","email","telephone","ville","code_postal","departement","pays","adresse","annee_naissance","genre"];
+  const ok = champs.some(k => payload[k]);
+  if (!ok) throw new Error("Aucun champ de recherche valide");
+
+  console.log("→ Payload BrixHub :", payload);
   return payload;
 }
 
 /* ============================================================
-   NORMALISATION DES RÉPONSES API
-   Convertit les noms de champs anglais → français
+   NORMALISATION DES RÉPONSES BRIXHUB
    ============================================================ */
 const FIELD_MAP = {
   "first_name":"prenom","firstname":"prenom","first":"prenom","given_name":"prenom",
@@ -930,46 +883,33 @@ function normalizeEntry(obj) {
 }
 
 /* ============================================================
-   APPEL À L'API DE RECHERCHE
+   APPEL API
    ============================================================ */
 async function searchViaAPI(query, filters) {
   const payload = buildPayload(query, filters);
-  console.log("Envoi à l'API :", payload);
-
   const data = await window.dataClient.query(payload);
-  console.log("Réponse brute :", data);
+  console.log("← Réponse BrixHub :", data);
 
-  // Récupère un tableau, peu importe le format
+  // Détecte une erreur renvoyée par BrixHub
+  if (data && data.error && data.status >= 400) {
+    const msg = data.message || (data.error && data.error.type) || "Erreur API";
+    throw new Error(msg);
+  }
+
+  // Récupère le tableau de résultats, peu importe le format
   let arr = [];
   if (Array.isArray(data)) arr = data;
   else if (data && Array.isArray(data.results)) arr = data.results;
   else if (data && Array.isArray(data.data)) arr = data.data;
   else if (data && Array.isArray(data.items)) arr = data.items;
   else if (data && Array.isArray(data.hits)) arr = data.hits;
+  else if (data && data.data && Array.isArray(data.data.results)) arr = data.data.results;
 
   return arr.map(normalizeEntry);
 }
 
 /* ============================================================
-   FUSION + DÉDOUBLONNAGE
-   ============================================================ */
-function mergeResults(list) {
-  const seen = new Set();
-  const out = [];
-  list.forEach(item => {
-    const em = normalize(item.email);
-    const tel = normalize(item.telephone).replace(/\D/g, "");
-    const nom = normalize(`${item.prenom || ""}|${item.nom_famille || ""}`);
-    const key = em ? "e:" + em : tel ? "t:" + tel : nom !== "|" ? "n:" + nom : null;
-    if (key && seen.has(key)) return;
-    if (key) seen.add(key);
-    out.push(item);
-  });
-  return out;
-}
-
-/* ============================================================
-   AFFICHAGE DES CARTES DE RÉSULTAT
+   AFFICHAGE DES CARTES
    ============================================================ */
 const LABELS = {
   prenom:"Prénom", nom_famille:"Nom", email:"Email",
@@ -995,7 +935,6 @@ function renderCard(item, idx) {
   const sub = item.email || item.telephone || "";
   const initials = ((prenom[0] || "") + (nom[0] || "")).toUpperCase() || "?";
 
-  // Trie les champs pour l'affichage
   const keys = Object.keys(item).filter(k => item[k] != null && item[k] !== "");
   const sorted = [
     ...ORDER.filter(k => keys.includes(k)),
@@ -1086,7 +1025,7 @@ function renderResults(items, t0) {
 }
 
 /* ============================================================
-   BOUTON SON
+   UI — SONS, SCROLL, CHAMP
    ============================================================ */
 document.getElementById("soundToggle").addEventListener("click", () => {
   soundEnabled = !soundEnabled;
@@ -1094,9 +1033,6 @@ document.getElementById("soundToggle").addEventListener("click", () => {
   toast(soundEnabled ? "Son activé" : "Son désactivé");
 });
 
-/* ============================================================
-   BOUTON REMONTER
-   ============================================================ */
 const scrollTopBtn = document.getElementById("scrollTop");
 window.addEventListener("scroll", () => {
   scrollTopBtn.classList.toggle("visible", window.scrollY > 400);
@@ -1105,9 +1041,6 @@ scrollTopBtn.addEventListener("click", () => {
   window.scrollTo({ top:0, behavior:"smooth" });
 });
 
-/* ============================================================
-   CHAMP DE RECHERCHE
-   ============================================================ */
 const input = document.getElementById("target");
 const inputClear = document.getElementById("inputClear");
 
@@ -1126,7 +1059,7 @@ input.addEventListener("keydown", e => {
 });
 
 /* ============================================================
-   BOUTON RECHERCHER (fonction principale)
+   BOUTON RECHERCHER
    ============================================================ */
 document.getElementById("go").addEventListener("click", async () => {
   const query = input.value.trim();
@@ -1134,7 +1067,6 @@ document.getElementById("go").addEventListener("click", async () => {
   const hasQuery = query.length >= 2;
   const hasFilters = Object.keys(filters).length > 0;
 
-  // Il faut au moins un mot-clé OU un filtre
   if (!hasQuery && !hasFilters) {
     toast("Saisissez un mot-clé ou un filtre", "error");
     playSound("error");
@@ -1156,7 +1088,7 @@ document.getElementById("go").addEventListener("click", async () => {
     if (results.length === 0) toast("Aucun résultat", "error");
   } catch (e) {
     console.error("Erreur :", e);
-    toast("Erreur : " + (e.message || "inconnue"), "error");
+    toast("Erreur : " + (e.message || "inconnue"), "error", 5000);
     renderResults([], t0);
   } finally {
     btn.disabled = false;
@@ -1173,7 +1105,7 @@ document.getElementById("aboutLink2").addEventListener("click", () => openModal(
 document.getElementById("mentionsLink").addEventListener("click", () => openModal("mentionsModal"));
 
 /* ============================================================
-   MACHINE À ÉCRIRE (animation du titre)
+   TYPEWRITER
    ============================================================ */
 (function typewriter() {
   const el = document.getElementById("typewriter");
