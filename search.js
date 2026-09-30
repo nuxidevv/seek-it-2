@@ -1,5 +1,4 @@
-// search.js — envoie les recherches à /api/search
-// (le proxy dans api/search.js parle à BrixHub, pas le navigateur)
+// search.js — Envoie les recherches au proxy /api/search
 
 (function () {
   const ENDPOINT = "/api/search";
@@ -12,12 +11,13 @@
     });
 
     if (!res.ok) {
-      throw new Error("Erreur serveur " + res.status);
+      const txt = await res.text().catch(() => "");
+      throw new Error("HTTP " + res.status + " — " + txt.slice(0, 200));
     }
 
     return res.json();
   }
 
   window.dataClient = { query };
-  console.log("Client de recherche prêt");
+  console.log("Client de recherche prêt →", ENDPOINT);
 })();
