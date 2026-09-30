@@ -1,30 +1,24 @@
-// api/search.js — proxy qui parle à BrixHub
-// Le navigateur appelle /api/search, ce fichier appelle BrixHub
+// search.js — Envoie les recherches au proxy /api/search
+// Le proxy (api/search.js) parle à BrixHub, pas le navigateur.
 
-const BRIXHUB_URL = "https://api.brixhub.ru/api/v1/search";
+(function () {
+  const ENDPOINT = "/api/search";
 
-export default async function handler(req, res) {
-  // Autorise les requêtes
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Méthode non autorisée" });
-
-  try {
-    const reponse = await fetch(BRIXHUB_URL, {
+  async function query(payload) {
+    const res = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body || {})
+      body: JSON.stringify(payload)
     });
 
-    const texte = await reponse.text();
-    let data;
-    try { data = JSON.parse(texte); } catch { data = { raw: texte }; }
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error("HTTP " + res.status + (txt ? " — " + txt.slice(0, 150) : ""));
+    }
 
-    return res.status(reponse.status).json(data);
-  } catch (err) {
-    return res.status(500).json({ error: "Erreur proxy", message: err.message });
+    return res.json();
   }
-}
+
+  window.dataClient = { query };
+  console.log("Client de recherche prêt →", ENDPOINT);
+})();
