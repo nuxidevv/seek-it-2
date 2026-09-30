@@ -222,30 +222,6 @@
     font-size:0.68rem; color:var(--text-3);
     text-transform:uppercase; letter-spacing:0.08em; font-weight:500;
   }
-  section.features { padding:72px 24px; border-top:1px solid var(--border); }
-  .section-tag {
-    display:inline-block; font-size:0.68rem; font-weight:600;
-    letter-spacing:0.12em; text-transform:uppercase;
-    color:var(--accent); font-family:var(--mono); margin-bottom:12px;
-  }
-  h2.section-title {
-    font-size:clamp(1.25rem, 2.5vw, 1.65rem); font-weight:700;
-    line-height:1.2; margin-bottom:12px; max-width:560px;
-  }
-  .section-sub {
-    font-size:0.875rem; color:var(--text-2);
-    line-height:1.6; max-width:520px; margin-bottom:32px;
-  }
-  .cards-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
-  .feature-card {
-    padding:22px; background:rgba(10,10,12,0.7);
-    border:1px solid var(--border); border-radius:18px;
-    transition:all 0.25s;
-  }
-  .feature-card:hover { border-color:var(--accent-border); transform:translateY(-2px); }
-  .feature-num { font-family:var(--mono); font-size:0.7rem; color:var(--text-3); margin-bottom:14px; }
-  .feature-title { font-size:0.9rem; font-weight:600; margin-bottom:6px; }
-  .feature-desc { font-size:0.8rem; color:var(--text-2); line-height:1.55; }
   footer { border-top:1px solid var(--border); padding:32px 24px; text-align:center; }
   .footer-links { display:flex; justify-content:center; gap:24px; margin-bottom:16px; flex-wrap:wrap; }
   .footer-links a {
@@ -524,33 +500,6 @@
     <div id="out"></div>
   </div>
 
-  <section class="features">
-    <div class="container">
-      <span class="section-tag">Confidentialité</span>
-      <h2 class="section-title">Ce qui n'est pas stocké ne peut pas fuiter</h2>
-      <p class="section-sub">
-        Seek It fonctionne entièrement dans votre navigateur. Aucune requête n'est envoyée sur un serveur, aucun historique n'est conservé.
-      </p>
-      <div class="cards-grid">
-        <div class="feature-card">
-          <div class="feature-num">01</div>
-          <div class="feature-title">Traitement local</div>
-          <div class="feature-desc">Les recherches s'exécutent dans votre navigateur via un index inversé optimisé.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-num">02</div>
-          <div class="feature-title">Aucun historique</div>
-          <div class="feature-desc">Les requêtes ne sont jamais enregistrées, ni localement, ni à distance.</div>
-        </div>
-        <div class="feature-card">
-          <div class="feature-num">03</div>
-          <div class="feature-title">Aucun partage</div>
-          <div class="feature-desc">Vos données restent les vôtres. Aucune revente, aucun tiers, aucun tracking.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <footer>
     <div class="footer-links">
       <a id="aboutLink2">À propos</a>
@@ -570,7 +519,6 @@
 
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- MODAL ABOUT -->
 <div class="modal-overlay" id="aboutModal">
   <div class="modal">
     <button class="modal-close" data-close="aboutModal" type="button">
@@ -596,7 +544,6 @@
   </div>
 </div>
 
-<!-- MODAL MENTIONS -->
 <div class="modal-overlay" id="mentionsModal">
   <div class="modal">
     <button class="modal-close" data-close="mentionsModal" type="button">
@@ -619,7 +566,6 @@
   </div>
 </div>
 
-<!-- Charge le client de recherche -->
 <script src="search.js"></script>
 
 <script>
@@ -803,46 +749,36 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
-   CONSTRUCTION DU PAYLOAD POUR BRIXHUB
-   BrixHub attend directement : nom_famille, email, telephone, prenom...
+   PAYLOAD POUR BRIXHUB
    ============================================================ */
 function buildPayload(query, filters) {
   const q = (query || "").trim();
   const payload = {};
 
-  // Analyse du texte saisi
   if (q) {
-    // Email
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(q)) {
       payload.email = q.toLowerCase();
     }
-    // Téléphone
     else if (/^\+?[\d\s.\-()]{6,}$/.test(q) && !/^[a-zA-ZÀ-ÿ]/.test(q)) {
       payload.telephone = q.replace(/\D/g, "");
     }
-    // Nom complet ou mot simple
     else {
       const parts = q.split(/\s+/).filter(Boolean);
       if (parts.length >= 2) {
-        // "Jean Dupont" → prenom=Jean, nom_famille=Dupont
-        // On envoie aussi l'inverse au cas où
         payload.prenom = parts[0];
         payload.nom_famille = parts.slice(1).join(" ");
         payload.prenom_alt = parts[parts.length - 1];
         payload.nom_famille_alt = parts.slice(0, -1).join(" ");
       } else {
-        // Un seul mot → on essaie dans nom_famille (le plus courant)
         payload.nom_famille = parts[0];
       }
     }
   }
 
-  // Ajoute les filtres (mêmes noms que BrixHub)
   Object.keys(filters).forEach(k => {
     if (filters[k]) payload[k] = filters[k];
   });
 
-  // Vérifie qu'il y a au moins un champ valide
   const champs = ["nom_famille","prenom","email","telephone","ville","code_postal","departement","pays","adresse","annee_naissance","genre"];
   const ok = champs.some(k => payload[k]);
   if (!ok) throw new Error("Aucun champ de recherche valide");
@@ -852,7 +788,7 @@ function buildPayload(query, filters) {
 }
 
 /* ============================================================
-   NORMALISATION DES RÉPONSES BRIXHUB
+   NORMALISATION DES RÉPONSES
    ============================================================ */
 const FIELD_MAP = {
   "first_name":"prenom","firstname":"prenom","first":"prenom","given_name":"prenom",
@@ -890,13 +826,11 @@ async function searchViaAPI(query, filters) {
   const data = await window.dataClient.query(payload);
   console.log("← Réponse BrixHub :", data);
 
-  // Détecte une erreur renvoyée par BrixHub
   if (data && data.error && data.status >= 400) {
     const msg = data.message || (data.error && data.error.type) || "Erreur API";
     throw new Error(msg);
   }
 
-  // Récupère le tableau de résultats, peu importe le format
   let arr = [];
   if (Array.isArray(data)) arr = data;
   else if (data && Array.isArray(data.results)) arr = data.results;
@@ -1025,7 +959,7 @@ function renderResults(items, t0) {
 }
 
 /* ============================================================
-   UI — SONS, SCROLL, CHAMP
+   UI
    ============================================================ */
 document.getElementById("soundToggle").addEventListener("click", () => {
   soundEnabled = !soundEnabled;
@@ -1059,7 +993,7 @@ input.addEventListener("keydown", e => {
 });
 
 /* ============================================================
-   BOUTON RECHERCHER
+   RECHERCHE
    ============================================================ */
 document.getElementById("go").addEventListener("click", async () => {
   const query = input.value.trim();
