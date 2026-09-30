@@ -23,12 +23,6 @@
     --accent-border:rgba(0,196,106,0.35);
     --danger:#e5484d;
     --danger-soft:rgba(229,72,77,0.10);
-    --warn:#e5a03a;
-    --info:#4d8fdb;
-    --discord:#5865F2;
-    --discord-hover:#4752c4;
-    --radius:14px;
-    --radius-lg:20px;
     --radius-pill:100px;
     --mono:'JetBrains Mono', ui-monospace, monospace;
   }
@@ -50,22 +44,19 @@
   body.modal-open { overflow:hidden; }
 
   #particleCanvas {
-    position:fixed;
-    inset:0;
+    position:fixed; inset:0;
     z-index:0;
     pointer-events:none;
     opacity:0.7;
   }
 
-  nav.topbar, main, footer, .scroll-top, .toast-container, .modal-overlay, .login-screen {
-    position:relative;
-    z-index:1;
+  nav.topbar, main, footer, .scroll-top, .toast-container, .modal-overlay {
+    position:relative; z-index:1;
   }
   nav.topbar { position:fixed; z-index:100; }
   .modal-overlay { z-index:200; }
   .scroll-top { z-index:90; }
   .toast-container { z-index:300; }
-  .login-screen { z-index:1000; }
 
   @keyframes fadeInUp {
     from { opacity:0; transform:translateY(12px); }
@@ -96,67 +87,6 @@
   button { font-family:inherit; cursor:pointer; }
   input, textarea, select { font-family:inherit; }
 
-  .login-screen {
-    position:fixed; inset:0;
-    background:rgba(0,0,0,0.85);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:24px; text-align:center;
-    transition:opacity 0.35s ease, visibility 0.35s;
-  }
-  .login-screen.hidden { opacity:0; visibility:hidden; pointer-events:none; }
-  .login-card {
-    max-width:420px; width:100%;
-    padding:40px 32px;
-    background:rgba(10,10,12,0.85);
-    backdrop-filter:blur(16px) saturate(140%);
-    -webkit-backdrop-filter:blur(16px) saturate(140%);
-    border:1px solid var(--border);
-    border-radius:24px;
-    animation:fadeInUp 0.5s ease-out;
-  }
-  .login-brand {
-    display:inline-flex; align-items:center; gap:10px;
-    font-size:1.05rem; font-weight:700; letter-spacing:-0.01em;
-    margin-bottom:28px;
-  }
-  .login-brand-mark {
-    width:28px; height:28px;
-    border:1.5px solid var(--accent);
-    border-radius:9px;
-    display:flex; align-items:center; justify-content:center;
-    color:var(--accent);
-    font-family:var(--mono); font-weight:600; font-size:13px;
-  }
-  .login-title {
-    font-size:1.5rem; font-weight:700;
-    letter-spacing:-0.02em; margin-bottom:10px;
-  }
-  .login-desc {
-    font-size:0.875rem; color:var(--text-2);
-    margin-bottom:28px; line-height:1.6;
-  }
-  .discord-btn {
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    width:100%; padding:14px 20px;
-    background:var(--discord); color:#fff;
-    border:none; border-radius:var(--radius-pill);
-    font-size:0.875rem; font-weight:600;
-    transition:background 0.15s ease, transform 0.1s ease;
-    -webkit-tap-highlight-color:transparent;
-    touch-action:manipulation;
-    position:relative;
-    z-index:10;
-  }
-  .discord-btn:hover { background:var(--discord-hover); }
-  .discord-btn:active { transform:scale(0.985); }
-  .discord-btn svg { width:20px; height:20px; pointer-events:none; }
-  .login-note {
-    margin-top:20px; font-size:0.75rem; color:var(--text-3);
-    line-height:1.6;
-  }
-
   nav.topbar {
     position:fixed; top:0; left:0; right:0;
     z-index:100;
@@ -172,11 +102,7 @@
   .brand {
     display:flex; align-items:center; gap:10px;
     font-weight:700; font-size:0.9rem; letter-spacing:-0.01em;
-    transition:opacity 0.15s ease;
-    -webkit-tap-highlight-color:transparent;
   }
-  .brand.admin-clickable { cursor:pointer; }
-  .brand.admin-clickable:hover { opacity:0.75; }
   .brand-mark {
     width:24px; height:24px;
     border:1.5px solid var(--accent);
@@ -215,25 +141,6 @@
     background:var(--accent-soft);
   }
   .nav-btn.discord:hover { background:rgba(0,196,106,0.16); color:var(--accent); }
-  .user-chip {
-    display:flex; align-items:center; gap:8px;
-    padding:3px 12px 3px 3px;
-    background:transparent;
-    border:1px solid var(--border);
-    border-radius:var(--radius-pill);
-    cursor:pointer;
-    transition:border-color 0.15s ease;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .user-chip:hover { border-color:var(--border-strong); }
-  .user-chip img {
-    width:22px; height:22px; border-radius:50%;
-    object-fit:cover;
-  }
-  .user-chip .name {
-    font-size:0.75rem; font-weight:500; color:var(--text);
-    max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
 
   main { position:relative; }
   .container { max-width:920px; margin:0 auto; padding:0 24px; }
@@ -299,17 +206,12 @@
     animation:fadeInUp 0.6s ease-out 0.15s backwards;
   }
 
-  .input-wrap {
-    position:relative;
-    margin-bottom:10px;
-  }
+  .input-wrap { position:relative; margin-bottom:10px; }
   .input-wrap .input-icon {
     position:absolute;
-    left:18px;
-    top:50%;
+    left:18px; top:50%;
     transform:translateY(-50%);
-    width:18px;
-    height:18px;
+    width:18px; height:18px;
     color:var(--text-2);
     pointer-events:none;
     z-index:5;
@@ -346,12 +248,10 @@
     border-color:var(--accent-border);
     box-shadow:0 0 0 3px rgba(0,196,106,0.08);
   }
-
   .input-wrap:focus-within .input-icon circle,
   .input-wrap:focus-within .input-icon line {
     stroke:var(--accent);
   }
-
   .input-type-badge {
     position:absolute; right:46px; top:50%;
     transform:translateY(-50%);
@@ -790,18 +690,6 @@
   .copy-btn svg { width:10px; height:10px; color:var(--text-3); pointer-events:none; }
   .copy-btn:hover svg { color:var(--accent); }
 
-  .err {
-    padding:14px 16px;
-    background:var(--danger-soft);
-    border:1px solid rgba(229,72,77,0.35);
-    border-radius:14px;
-    color:var(--danger);
-    font-size:0.8rem;
-    margin-top:12px;
-    font-family:var(--mono);
-    animation:fadeIn 0.3s ease-out;
-  }
-
   .modal-overlay {
     position:fixed; inset:0;
     background:rgba(0,0,0,0.75);
@@ -829,7 +717,6 @@
   .modal-overlay.open .modal {
     animation:fadeInUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .modal.wide { max-width:720px; }
   .modal-close {
     position:absolute;
     top:14px; right:14px;
@@ -866,183 +753,6 @@
   .modal-body h3:first-child { margin-top:0; }
   .modal-body ul { padding-left:18px; margin-bottom:10px; }
   .modal-body li { margin-bottom:3px; }
-
-  .admin-form {
-    padding:16px;
-    background:var(--bg);
-    border:1px solid var(--border);
-    border-radius:18px;
-    display:flex; flex-direction:column; gap:12px;
-    margin-bottom:20px;
-  }
-  .admin-form-row { display:flex; flex-direction:column; gap:6px; }
-  .admin-form-row label {
-    font-size:0.7rem;
-    font-weight:500;
-    color:var(--text-2);
-  }
-  .admin-form-row input {
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:var(--radius-pill);
-    font-size:0.82rem;
-    outline:none;
-    width:100%;
-    transition:border-color 0.15s ease;
-    -webkit-appearance:none;
-    appearance:none;
-  }
-  .admin-form-row input::placeholder { color:var(--text-3); }
-  .admin-form-row input:focus { border-color:var(--accent-border); }
-  .admin-form-actions { display:flex; gap:8px; }
-  .admin-btn {
-    padding:10px 18px;
-    border-radius:var(--radius-pill);
-    font-size:0.8rem;
-    font-weight:500;
-    display:inline-flex; align-items:center; justify-content:center; gap:6px;
-    transition:background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-    flex:1;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .admin-btn.primary {
-    background:var(--accent);
-    color:#08120c;
-    border:1px solid var(--accent);
-  }
-  .admin-btn.primary:hover { background:#00d977; }
-  .admin-btn.secondary {
-    background:transparent;
-    color:var(--text-2);
-    border:1px solid var(--border);
-  }
-  .admin-btn.secondary:hover { color:var(--text); border-color:var(--border-strong); }
-
-  .drop-zone {
-    padding:28px 20px;
-    border:1.5px dashed var(--border-strong);
-    border-radius:18px;
-    background:var(--surface-2);
-    text-align:center;
-    cursor:pointer;
-    transition:border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
-  }
-  .drop-zone:hover {
-    border-color:var(--accent-border);
-    background:var(--accent-soft);
-    transform:scale(1.005);
-  }
-  .drop-zone.dragover { border-color:var(--accent); background:var(--accent-soft); }
-  .drop-zone svg {
-    width:28px; height:28px;
-    color:var(--accent);
-    margin-bottom:10px;
-    pointer-events:none;
-  }
-  .drop-zone-title {
-    font-size:0.85rem;
-    font-weight:600;
-    color:var(--text);
-    margin-bottom:4px;
-  }
-  .drop-zone-sub {
-    font-size:0.72rem;
-    color:var(--text-3);
-    line-height:1.5;
-  }
-
-  .file-list { display:flex; flex-direction:column; gap:6px; }
-  .file-item {
-    display:flex; align-items:center; justify-content:space-between;
-    gap:10px;
-    padding:9px 12px;
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    border-radius:12px;
-    font-size:0.78rem;
-    animation:fadeInUp 0.25s ease-out;
-  }
-  .file-item-info { flex:1; min-width:0; }
-  .file-item-name {
-    font-weight:500;
-    color:var(--text);
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  .file-item-meta {
-    font-size:0.68rem;
-    color:var(--text-3);
-    font-family:var(--mono);
-    margin-top:2px;
-  }
-  .file-item-remove {
-    width:22px; height:22px;
-    border-radius:50%;
-    background:transparent;
-    border:1px solid var(--border);
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
-    transition:border-color 0.15s ease;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .file-item-remove:hover { border-color:rgba(229,72,77,0.5); }
-  .file-item-remove svg { width:10px; height:10px; color:var(--text-3); pointer-events:none; }
-  .file-item-remove:hover svg { color:var(--danger); }
-
-  .admin-hint {
-    padding:12px 14px;
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    border-radius:12px;
-    font-size:0.72rem;
-    color:var(--text-2);
-    line-height:1.7;
-    font-family:var(--mono);
-  }
-  .admin-hint code {
-    background:rgba(255,255,255,0.05);
-    padding:1px 5px;
-    border-radius:4px;
-    color:var(--accent);
-    font-size:0.7rem;
-  }
-
-  .db-list { display:flex; flex-direction:column; gap:6px; }
-  .db-item {
-    display:flex; align-items:center; justify-content:space-between;
-    gap:12px;
-    padding:12px 14px;
-    background:var(--surface-2);
-    border:1px solid var(--border);
-    border-radius:14px;
-    animation:fadeInUp 0.25s ease-out;
-  }
-  .db-info { flex:1; min-width:0; }
-  .db-name {
-    font-size:0.82rem;
-    font-weight:600;
-    color:var(--text);
-    margin-bottom:3px;
-  }
-  .db-meta {
-    font-size:0.7rem;
-    color:var(--text-3);
-    font-family:var(--mono);
-  }
-  .db-delete {
-    width:26px; height:26px;
-    border-radius:50%;
-    background:transparent;
-    border:1px solid var(--border);
-    display:flex; align-items:center; justify-content:center;
-    transition:border-color 0.15s ease;
-    flex-shrink:0;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .db-delete:hover { border-color:rgba(229,72,77,0.5); }
-  .db-delete svg { width:11px; height:11px; color:var(--text-3); pointer-events:none; }
-  .db-delete:hover svg { color:var(--danger); }
 
   .toast-container {
     position:fixed; bottom:24px; left:50%;
@@ -1107,7 +817,6 @@
     .row { flex-direction:column; gap:2px; }
     .row-label { min-width:0; }
     .copy-btn { opacity:1; }
-    .user-chip .name { display:none; }
     .nav-btn.hide-mobile { display:none; }
     .modal { padding:20px; }
     .modal-overlay { padding:40px 12px 20px; }
@@ -1118,36 +827,14 @@
 
 <canvas id="particleCanvas"></canvas>
 
-<div class="login-screen" id="loginScreen">
-  <div class="login-card">
-    <div class="login-brand">
-      <div class="login-brand-mark">S</div>
-      <span>Seek It</span>
-    </div>
-    <h1 class="login-title">Connexion requise</h1>
-    <p class="login-desc">
-      L'accès à Seek It nécessite une authentification Discord. Aucune donnée n'est stockée sur nos serveurs.
-    </p>
-    <button class="discord-btn" id="discordLoginBtn" type="button">
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-      </svg>
-      Se connecter avec Discord
-    </button>
-    <p class="login-note">
-      Votre identifiant Discord est uniquement utilisé pour vérifier votre accès. Aucune autre information n'est collectée.
-    </p>
-  </div>
-</div>
-
-<nav class="topbar" id="topbar" style="display:none;">
-  <div class="brand" id="brandLogo">
+<nav class="topbar">
+  <div class="brand">
     <div class="brand-mark">S</div>
     <span>Seek It</span>
   </div>
   <div class="nav-actions">
     <button class="nav-btn" id="soundToggle" title="Son" type="button">
-      <svg id="soundIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
       </svg>
@@ -1160,14 +847,10 @@
     </button>
     <a class="nav-btn discord" href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">Discord</a>
     <button class="nav-btn hide-mobile" id="aboutLink" type="button">À propos</button>
-    <button class="user-chip" id="userChip" style="display:none;" type="button">
-      <img id="userAvatar" src="" alt="">
-      <span class="name" id="userName">…</span>
-    </button>
   </div>
 </nav>
 
-<main id="mainContent" style="display:none;">
+<main>
   <section class="hero">
     <div class="hero-eyebrow">
       <span class="dot"></span>
@@ -1279,7 +962,7 @@
       </div>
       <div class="stat">
         <div class="stat-value accent" id="ulpTokens">0</div>
-        <div class="stat-label">Tokens ULP</div>
+        <div class="stat-label">Tokens</div>
       </div>
     </div>
   </section>
@@ -1320,7 +1003,6 @@
       <a id="aboutLink2">À propos</a>
       <a id="mentionsLink">Mentions légales</a>
       <a href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer" class="discord">Discord</a>
-      <a id="logoutLink">Se déconnecter</a>
     </div>
     <div class="credits">Développé par l'Équipe <strong>Seek It</strong></div>
     <div class="watermark">Seek It Copyright 2026 - Tous droits réservés</div>
@@ -1374,11 +1056,11 @@
       <p>L'ensemble des éléments du site Seek It (structure, code, design) est la propriété exclusive de l'équipe Seek It. Toute reproduction sans autorisation est interdite.</p>
 
       <h3>Données personnelles — RGPD</h3>
-      <p>Aucune donnée personnelle n'est stockée sur nos serveurs. L'authentification Discord est utilisée uniquement pour vérifier votre identité et est conservée localement dans votre navigateur (localStorage).</p>
+      <p>Aucune donnée personnelle n'est stockée sur nos serveurs. Les préférences sont conservées localement dans votre navigateur (localStorage).</p>
       <p>Conformément au RGPD (UE 2016/679), vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Pour toute demande, contactez l'équipe Seek It sur notre <a href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">Discord</a>.</p>
 
       <h3>Cookies et stockage local</h3>
-      <p>Aucun cookie tiers. Aucun pixel de tracking. Aucun outil d'analyse externe. Le site utilise uniquement le stockage local du navigateur (localStorage / IndexedDB) pour vos préférences et les données importées par les administrateurs.</p>
+      <p>Aucun cookie tiers. Aucun pixel de tracking. Aucun outil d'analyse externe. Le site utilise uniquement le stockage local du navigateur (localStorage) pour vos préférences.</p>
 
       <h3>Contact</h3>
       <p>Pour toute question relative aux mentions légales ou au RGPD, contactez un administrateur sur notre serveur Discord.</p>
@@ -1396,71 +1078,17 @@
     </button>
     <div class="modal-title">À propos</div>
     <div class="modal-body">
-      <p><strong>Seek It</strong> est un moteur de recherche local qui interroge les sources ajoutées par les administrateurs.</p>
+      <p><strong>Seek It</strong> est un moteur de recherche qui interroge plusieurs sources pour retrouver une personne à partir de quelques informations.</p>
       <h3>Recherche</h3>
       <ul>
         <li>Prénom + nom séparés par un espace</li>
         <li>Adresse email complète</li>
         <li>Numéro de téléphone</li>
       </ul>
-      <h3>Index ULP</h3>
-      <p>Les entrées sont indexées localement dans votre navigateur. Cet index permet des recherches quasi-instantanées même sur de gros volumes.</p>
       <h3>Confidentialité</h3>
       <p>Aucune donnée n'est envoyée sur un serveur. Tout le traitement se fait dans votre navigateur.</p>
       <h3>Support</h3>
       <p>Rejoignez notre serveur Discord : <a href="https://discord.gg/HrmhFFtwN7" target="_blank" rel="noopener noreferrer">discord.gg/HrmhFFtwN7</a></p>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="adminModal">
-  <div class="modal wide">
-    <button class="modal-close" data-close="adminModal" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
-    <div class="modal-title">Panel administrateur</div>
-    <div class="modal-body">
-
-      <h3>Importer des fichiers</h3>
-      <div class="admin-form">
-        <div class="admin-form-row">
-          <label>Nom de la source</label>
-          <input id="adminDbName" placeholder="Ex : Registre 2024" autocomplete="off">
-        </div>
-
-        <div class="drop-zone" id="dropZone">
-          <input type="file" id="fileInput" accept=".json,.txt,.csv,.sql,.ndjson,.log" multiple style="display:none;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-          <div class="drop-zone-title">Déposez vos fichiers ici</div>
-          <div class="drop-zone-sub">ou cliquez pour parcourir — .json, .txt, .csv, .sql, .ndjson, .log (max 500 Mo)</div>
-        </div>
-
-        <div class="file-list" id="fileList"></div>
-
-        <div class="admin-form-actions">
-          <button class="admin-btn secondary" id="adminClearFilesBtn" type="button">Vider</button>
-          <button class="admin-btn primary" id="adminUploadBtn" type="button">Importer</button>
-        </div>
-
-        <div class="admin-hint">
-          <strong>Formats supportés</strong><br>
-          json : tableau d'objets <code>[{ "prenom": "Jean", ... }]</code><br>
-          ndjson : un objet par ligne<br>
-          csv : avec en-tête (prenom, nom_famille, email, telephone, ville, code_postal...)<br>
-          txt / log : une entrée par ligne, séparateurs <code>:</code> <code>|</code> <code>;</code><br>
-          sql : extraction automatique des tuples <code>('Jean','Dupont',...)</code>
-        </div>
-      </div>
-
-      <h3>Sources existantes (<span id="adminDbCount">0</span>)</h3>
-      <div class="db-list" id="adminDbList"></div>
     </div>
   </div>
 </div>
@@ -1472,29 +1100,10 @@
 
 <script>
 /* ============================================================
-   CONFIGURATION
+   FALLBACK si search.js absent
    ============================================================ */
-const DISCORD_CLIENT_ID = "1553737753894850640";
-const DISCORD_REDIRECT  = "https://seek-it2.vercel.app/";
-const ADMIN_DISCORD_IDS = [
-  "1535798111799091250",
-  "1454894309500256452"
-];
-/* ============================================================ */
-
-const SCOPES = "identify";
-const LS_USER = "seekit-user";
-const LS_DBS_LEGACY = "seekit-databases";
-const IDB_NAME = "seekit-db";
-const IDB_VERSION = 1;
-const IDB_STORE = "databases";
-const MAX_FILE_SIZE = 500 * 1024 * 1024;
-
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-/* ===== FALLBACK si search.js absent ===== */
 if (typeof window.dataClient === "undefined") {
-  console.warn("[Seek It] search.js introuvable — recherche locale uniquement");
+  console.warn("[Seek It] search.js introuvable");
   window.dataClient = {
     query: async () => { throw new Error("dataClient indisponible"); }
   };
@@ -1550,10 +1159,7 @@ if (typeof window.dataClient === "undefined") {
       p.x += p.vx;
       p.y += p.vy;
 
-      if (p.y > h + 10) {
-        particles[i] = createParticle(true);
-        continue;
-      }
+      if (p.y > h + 10) { particles[i] = createParticle(true); continue; }
       if (p.x < -10) p.x = w + 10;
       if (p.x > w + 10) p.x = -10;
 
@@ -1579,231 +1185,7 @@ if (typeof window.dataClient === "undefined") {
   start();
 })();
 
-/* ===== INDEXEDDB ===== */
-let _idbPromise = null;
-function openIDB() {
-  if (_idbPromise) return _idbPromise;
-  _idbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        db.createObjectStore(IDB_STORE, { keyPath:"id", autoIncrement:true });
-      }
-    };
-    req.onsuccess = e => resolve(e.target.result);
-    req.onerror = e => reject(e.target.error);
-  });
-  return _idbPromise;
-}
-async function idbGetAll() {
-  const db = await openIDB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction(IDB_STORE, "readonly");
-    const req = tx.objectStore(IDB_STORE).getAll();
-    req.onsuccess = () => res(req.result || []);
-    req.onerror = () => rej(req.error);
-  });
-}
-async function idbAdd(entry) {
-  const db = await openIDB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction(IDB_STORE, "readwrite");
-    const req = tx.objectStore(IDB_STORE).add(entry);
-    req.onsuccess = () => res(req.result);
-    req.onerror = () => rej(req.error);
-  });
-}
-async function idbDelete(id) {
-  const db = await openIDB();
-  return new Promise((res, rej) => {
-    const tx = db.transaction(IDB_STORE, "readwrite");
-    const req = tx.objectStore(IDB_STORE).delete(id);
-    req.onsuccess = () => res();
-    req.onerror = () => rej(req.error);
-  });
-}
-
-let _dbsCache = null;
-
-async function loadDatabasesAsync() {
-  try {
-    const rows = await idbGetAll();
-    _dbsCache = rows.sort((a,b) => (a.ts || 0) - (b.ts || 0));
-    ULP.build(_dbsCache);
-    return _dbsCache;
-  } catch (e) {
-    console.error("IndexedDB load error", e);
-    return [];
-  }
-}
-function getCachedDatabases() { return _dbsCache || []; }
-async function addDatabase(db) {
-  await idbAdd({ name: db.name, entries: db.entries, source: db.source, ts: db.ts || Date.now() });
-  await loadDatabasesAsync();
-}
-async function deleteDatabaseById(id) {
-  await idbDelete(id);
-  await loadDatabasesAsync();
-}
-function totalEntries(dbs) {
-  return (dbs || []).reduce((a, d) => a + (Array.isArray(d.entries) ? d.entries.length : 0), 0);
-}
-
-async function migrateLegacyIfAny() {
-  let legacy = null;
-  try { legacy = JSON.parse(localStorage.getItem(LS_DBS_LEGACY) || "null"); } catch {}
-  if (!Array.isArray(legacy) || legacy.length === 0) return;
-  const existing = await idbGetAll();
-  if (existing.length > 0) {
-    try { localStorage.removeItem(LS_DBS_LEGACY); } catch {}
-    return;
-  }
-  for (const db of legacy) {
-    try {
-      await idbAdd({ name: db.name || "Import", entries: db.entries || [], source: db.source || "Migration", ts: db.ts || Date.now() });
-    } catch (e) { console.error(e); }
-  }
-  try { localStorage.removeItem(LS_DBS_LEGACY); } catch {}
-}
-
-/* ===== ULP ===== */
-const ULP = {
-  built: false,
-  tokens: new Map(),
-  flatEntries: [],
-  stats: { tokens:0, entries:0, buildTimeMs:0 },
-
-  tokenizeValue(raw, key) {
-    const out = new Set();
-    if (raw == null) return out;
-    const s = String(raw).toLowerCase().trim();
-    if (!s) return out;
-
-    if (key === "email") {
-      out.add("em:" + s);
-      const [local, domain] = s.split("@");
-      if (local) out.add("eml:" + local);
-      if (domain) out.add("emd:" + domain);
-    }
-
-    if (key === "telephone" || key === "phone") {
-      const digits = s.replace(/\D/g, "");
-      if (digits.length >= 6) {
-        out.add("tel:" + digits);
-        out.add("tel6:" + digits.slice(-6));
-        if (digits.length >= 8) out.add("tel8:" + digits.slice(-8));
-      }
-    }
-
-    const words = s.split(/[\s\-'.,;|/\\()\[\]]+/).filter(w => w.length >= 2);
-    words.forEach(w => {
-      out.add("w:" + w);
-      if (w.length > 3) {
-        for (let i = 3; i <= Math.min(w.length, 12); i++) {
-          out.add("p:" + w.slice(0, i));
-        }
-      }
-    });
-
-    out.add("f:" + s);
-    return out;
-  },
-
-  build(dbs) {
-    const t0 = performance.now();
-    this.tokens = new Map();
-    this.flatEntries = [];
-    let idx = 0;
-
-    (dbs || []).forEach(db => {
-      if (!Array.isArray(db.entries)) return;
-      db.entries.forEach(entry => {
-        const record = { ...entry, _source_db: db.name, _ulpIdx: idx };
-        this.flatEntries.push(record);
-        Object.keys(entry).forEach(key => {
-          if (key.startsWith("_")) return;
-          const v = entry[key];
-          if (v == null || v === "" || typeof v === "object") return;
-          const toks = this.tokenizeValue(v, key);
-          toks.forEach(tk => {
-            if (!this.tokens.has(tk)) this.tokens.set(tk, new Set());
-            this.tokens.get(tk).add(idx);
-          });
-        });
-        idx++;
-      });
-    });
-
-    this.built = true;
-    this.stats = {
-      tokens: this.tokens.size,
-      entries: idx,
-      buildTimeMs: Math.round(performance.now() - t0)
-    };
-    console.log(`[ULP] ${idx} entrées, ${this.tokens.size} tokens, ${this.stats.buildTimeMs} ms`);
-    const el = document.getElementById("ulpTokens");
-    if (el) el.textContent = this.tokens.size.toLocaleString("fr-FR");
-  },
-
-  lookup(query, filters) {
-    if (!this.built) return null;
-    const q = String(query || "").toLowerCase().trim();
-    const type = detectType(query);
-    let candidateSets = [];
-
-    if (q) {
-      const qTokens = new Set();
-      if (type === "email") {
-        qTokens.add("em:" + q);
-      } else if (type === "phone") {
-        const d = q.replace(/\D/g, "");
-        if (d.length >= 6) qTokens.add("tel:" + d);
-      } else {
-        const words = q.split(/\s+/).filter(w => w.length >= 2);
-        words.forEach(w => {
-          if (this.tokens.has("w:" + w)) qTokens.add("w:" + w);
-          else if (w.length >= 3) qTokens.add("p:" + w.slice(0, Math.min(w.length, 6)));
-        });
-      }
-      qTokens.forEach(tk => {
-        const s = this.tokens.get(tk);
-        if (s) candidateSets.push(s);
-      });
-      if (candidateSets.length === 0) return new Set();
-    }
-
-    Object.keys(filters).forEach(k => {
-      const v = String(filters[k]).toLowerCase().trim();
-      if (!v) return;
-      let tokenSet = null;
-      if (["code_postal","annee_naissance","genre","departement","pays"].includes(k)) {
-        tokenSet = this.tokens.get("f:" + v) || null;
-      }
-      if (!tokenSet) tokenSet = this.tokens.get("w:" + v) || null;
-      if (!tokenSet && v.length >= 3) tokenSet = this.tokens.get("p:" + v.slice(0, 6)) || null;
-      candidateSets.push(tokenSet || new Set());
-    });
-
-    if (candidateSets.length === 0) return null;
-
-    candidateSets.sort((a,b) => a.size - b.size);
-    const result = new Set(candidateSets[0]);
-    for (let i = 1; i < candidateSets.length; i++) {
-      const s = candidateSets[i];
-      for (const v of Array.from(result)) {
-        if (!s.has(v)) result.delete(v);
-      }
-      if (result.size === 0) break;
-    }
-    return result;
-  }
-};
-
-const prefs = { particles: false };
-try { Object.assign(prefs, JSON.parse(localStorage.getItem("seekit-prefs") || "{}")); } catch {}
-function savePrefs() { try { localStorage.setItem("seekit-prefs", JSON.stringify(prefs)); } catch {} }
-
+/* ===== TOASTS ===== */
 const toastContainer = document.getElementById("toastContainer");
 function toast(message, type = "success", duration = 3000) {
   const el = document.createElement("div");
@@ -1813,6 +1195,7 @@ function toast(message, type = "success", duration = 3000) {
   setTimeout(() => { el.classList.add("leaving"); setTimeout(() => el.remove(), 200); }, duration);
 }
 
+/* ===== SONS ===== */
 let soundEnabled = true;
 try { soundEnabled = localStorage.getItem("seekit-sound") !== "off"; } catch {}
 let audioCtx = null;
@@ -1844,107 +1227,7 @@ function playSound(type) {
 }
 document.addEventListener("click", () => ensureAudio(), { once:true });
 
-function getStoredUser() {
-  try { return JSON.parse(localStorage.getItem(LS_USER) || "null"); } catch { return null; }
-}
-function storeUser(u) { try { localStorage.setItem(LS_USER, JSON.stringify(u)); } catch {} }
-function clearUser() { try { localStorage.removeItem(LS_USER); } catch {} }
-
-function startDiscordLogin(e) {
-  if (e && e.preventDefault) e.preventDefault();
-
-  const params = new URLSearchParams({
-    client_id: DISCORD_CLIENT_ID,
-    redirect_uri: DISCORD_REDIRECT,
-    response_type: "token",
-    scope: SCOPES
-  });
-  const url = "https://discord.com/oauth2/authorize?" + params.toString();
-
-  console.log("[Seek It] Redirection vers :", url);
-
-  try {
-    if (IS_IOS) {
-      window.location.assign(url);
-    } else {
-      window.location.href = url;
-    }
-  } catch (err) {
-    console.error("[Seek It] Erreur redirection :", err);
-    try { window.location.replace(url); } catch (e2) {
-      window.open(url, "_self");
-    }
-  }
-}
-
-async function fetchDiscordUser(token) {
-  const res = await fetch("https://discord.com/api/users/@me", {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  if (!res.ok) throw new Error("Discord API error " + res.status);
-  return res.json();
-}
-
-async function handleOAuthCallback() {
-  const hash = window.location.hash;
-  if (!hash || hash.length < 2) return null;
-  const params = new URLSearchParams(hash.substring(1));
-  const token = params.get("access_token");
-  if (!token) return null;
-  try {
-    history.replaceState(null, "", window.location.pathname + window.location.search);
-  } catch (e) {
-    window.location.hash = "";
-  }
-  try {
-    const user = await fetchDiscordUser(token);
-    const stored = {
-      id: user.id,
-      username: user.username,
-      global_name: user.global_name || user.username,
-      avatar: user.avatar
-        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${user.avatar.startsWith("a_") ? "gif" : "png"}?size=128`
-        : `https://cdn.discordapp.com/embed/avatars/${(Number(user.id) >> 22) % 6}.png`,
-      token, ts: Date.now()
-    };
-    storeUser(stored);
-    return stored;
-  } catch (e) {
-    console.error(e);
-    toast("Échec de la connexion Discord", "error");
-    return null;
-  }
-}
-
-async function showMain(user) {
-  document.getElementById("loginScreen").classList.add("hidden");
-  document.getElementById("topbar").style.display = "flex";
-  document.getElementById("mainContent").style.display = "block";
-
-  const chip = document.getElementById("userChip");
-  chip.style.display = "flex";
-  document.getElementById("userAvatar").src = user.avatar;
-  document.getElementById("userName").textContent = user.global_name || user.username;
-
-  if (ADMIN_DISCORD_IDS.map(String).includes(String(user.id))) {
-    document.getElementById("brandLogo").classList.add("admin-clickable");
-    document.getElementById("brandLogo").title = "Ouvrir le panel admin";
-  }
-
-  await migrateLegacyIfAny();
-  await loadDatabasesAsync();
-  refreshStats();
-}
-
-function refreshStats() {
-  const dbs = getCachedDatabases();
-  document.getElementById("dbCount").textContent = dbs.length;
-  document.getElementById("entriesCount").textContent = totalEntries(dbs).toLocaleString("fr-FR");
-  if (ULP.built) {
-    document.getElementById("ulpTokens").textContent = ULP.stats.tokens.toLocaleString("fr-FR");
-  }
-}
-
+/* ===== MODALES ===== */
 function openModal(id) {
   document.getElementById(id).classList.add("open");
   document.body.classList.add("modal-open");
@@ -1971,6 +1254,7 @@ document.addEventListener("keydown", e => {
   }
 });
 
+/* ===== FILTRES ===== */
 const TYPE_LABELS = { name:"Nom", email:"Email", phone:"Téléphone" };
 function detectType(v) {
   v = (v || "").trim();
@@ -2017,71 +1301,12 @@ Object.values(FILTER_IDS).forEach(id => {
   }
 });
 
+/* ===== UTILS ===== */
 function normalize(s) { return String(s ?? "").toLowerCase().trim(); }
-
-function searchInDatabases(query, filters) {
-  let candidates = null;
-  if (ULP.built) candidates = ULP.lookup(query, filters);
-
-  const q = normalize(query);
-  const type = detectType(query);
-  const fKeys = Object.keys(filters);
-
-  const entriesToScan = candidates
-    ? Array.from(candidates).map(i => ULP.flatEntries[i]).filter(Boolean)
-    : (() => {
-        const all = [];
-        getCachedDatabases().forEach(db => {
-          if (Array.isArray(db.entries)) db.entries.forEach(e => all.push({ ...e, _source_db: db.name }));
-        });
-        return all;
-      })();
-
-  return entriesToScan.filter(entry => {
-    if (q) {
-      let match = false;
-      if (type === "email") {
-        match = normalize(entry.email) === q || normalize(entry.email).includes(q);
-      } else if (type === "phone") {
-        const cq = q.replace(/\D/g, "");
-        const ce = normalize(entry.telephone).replace(/\D/g, "");
-        match = ce.includes(cq);
-      } else {
-        const full = normalize(`${entry.prenom || ""} ${entry.nom_famille || ""}`);
-        const full2 = normalize(`${entry.nom_famille || ""} ${entry.prenom || ""}`);
-        match = full.includes(q) || full2.includes(q) || normalize(entry.nom_utilisateur).includes(q);
-      }
-      if (!match) return false;
-    }
-    for (const k of fKeys) {
-      const fv = normalize(filters[k]);
-      const ev = normalize(entry[k]);
-      if (!ev.includes(fv)) return false;
-    }
-    return true;
-  });
-}
-
-/* ===== FUSION LOCALE + API ===== */
-function mergeResults(local, api) {
-  const seen = new Set();
-  const key = r => {
-    const em = normalize(r.email);
-    if (em) return "e:" + em;
-    const tel = normalize(r.telephone || r.phone).replace(/\D/g, "");
-    if (tel) return "t:" + tel;
-    const nom = normalize(`${r.prenom || ""}|${r.nom_famille || r.nom || ""}`);
-    if (nom !== "|") return "n:" + nom;
-    return null;
-  };
-  const out = [];
-  for (const item of [...local, ...api]) {
-    const k = key(item);
-    if (k && seen.has(k)) continue;
-    if (k) seen.add(k);
-    out.push(item);
-  }
-  return out;
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
 }
 
 /* ===== APPEL API (via proxy /api/search) ===== */
@@ -2094,15 +1319,11 @@ async function searchViaAPI(query, filters) {
   if (data && Array.isArray(data.results)) return data.results;
   if (data && Array.isArray(data.data)) return data.data;
   if (data && Array.isArray(data.items)) return data.items;
+  if (data && Array.isArray(data.hits)) return data.hits;
   return [];
 }
 
-function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[m]));
-}
-
+/* ===== RENDU CARTES ===== */
 const LABELS = {
   _source_db:"Source", prenom:"Prénom", nom_famille:"Nom", name:"Nom",
   email:"Email", telephone:"Téléphone", phone:"Téléphone",
@@ -2124,7 +1345,7 @@ function renderCard(item, idx) {
   const sub = item.email && (prenom || nom) ? item.email : (item.telephone && (prenom || nom) ? item.telephone : "");
   const initials = ((prenom[0] || "") + (nom[0] || "")).toUpperCase() || "?";
 
-  const keys = Object.keys(item).filter(k => item[k] != null && item[k] !== "" && typeof item[k] !== "object" && k !== "_ulpIdx");
+  const keys = Object.keys(item).filter(k => item[k] != null && item[k] !== "" && typeof item[k] !== "object");
   const sorted = [...ORDER.filter(k => keys.includes(k)), ...keys.filter(k => !ORDER.includes(k))];
 
   const rows = sorted.map(k => {
@@ -2211,39 +1432,33 @@ function renderResults(items, t0) {
   out.scrollIntoView({ behavior:"smooth", block:"start" });
 }
 
-/* ===== EVENTS ===== */
-(function bindDiscordBtn() {
-  const btn = document.getElementById("discordLoginBtn");
-  if (!btn) {
-    console.error("[Seek It] Bouton discordLoginBtn introuvable");
-    return;
+/* ===== FUSION (dédoublonnage) ===== */
+function mergeResults(local, api) {
+  const seen = new Set();
+  const key = r => {
+    const em = normalize(r.email);
+    if (em) return "e:" + em;
+    const tel = normalize(r.telephone || r.phone).replace(/\D/g, "");
+    if (tel) return "t:" + tel;
+    const nom = normalize(`${r.prenom || ""}|${r.nom_famille || r.nom || ""}`);
+    if (nom !== "|") return "n:" + nom;
+    return null;
+  };
+  const out = [];
+  for (const item of [...local, ...api]) {
+    const k = key(item);
+    if (k && seen.has(k)) continue;
+    if (k) seen.add(k);
+    out.push(item);
   }
-  btn.addEventListener("click", startDiscordLogin);
-  btn.addEventListener("touchend", function(e) {
-    e.preventDefault();
-    startDiscordLogin(e);
-  }, { passive: false });
-  console.log("[Seek It] Bouton Discord branché");
-})();
+  return out;
+}
 
-document.getElementById("logoutLink").addEventListener("click", () => { clearUser(); location.reload(); });
-document.getElementById("userChip").addEventListener("click", () => {
-  if (confirm("Se déconnecter ?")) { clearUser(); location.reload(); }
-});
-
+/* ===== EVENTS UI ===== */
 document.getElementById("settingsToggle").addEventListener("click", () => openModal("settingsModal"));
 document.getElementById("aboutLink").addEventListener("click", () => openModal("aboutModal"));
 document.getElementById("aboutLink2").addEventListener("click", () => openModal("aboutModal"));
 document.getElementById("mentionsLink").addEventListener("click", () => openModal("mentionsModal"));
-
-document.getElementById("brandLogo").addEventListener("click", async () => {
-  const stored = getStoredUser();
-  if (!stored) return;
-  if (!ADMIN_DISCORD_IDS.map(String).includes(String(stored.id))) return;
-  await loadDatabasesAsync();
-  renderAdminDbList();
-  openModal("adminModal");
-});
 
 document.getElementById("clearCacheBtn").addEventListener("click", () => {
   try {
@@ -2295,7 +1510,7 @@ inputClear.addEventListener("click", () => {
 });
 input.addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("go").click(); });
 
-/* ===== RECHERCHE : LOCALE + API EN PARALLÈLE ===== */
+/* ===== RECHERCHE : API ===== */
 document.getElementById("go").addEventListener("click", async () => {
   const query = input.value.trim();
   const filters = readFilters();
@@ -2311,315 +1526,22 @@ document.getElementById("go").addEventListener("click", async () => {
   btnText.textContent = "Recherche";
 
   const t0 = performance.now();
-
-  // 1) Résultats locaux (rapide, synchrone)
-  let localResults = [];
+  let results = [];
   try {
-    localResults = searchInDatabases(query, filters);
+    results = await searchViaAPI(query, filters);
   } catch (e) {
-    console.error("[local]", e);
+    console.warn("[search]", e.message);
   }
 
-  // 2) Résultats API (asynchrone, en parallèle)
-  let apiResults = [];
-  if (query.length >= 2) {
-    try {
-      apiResults = await searchViaAPI(query, filters);
-      console.log(`[API] ${apiResults.length} résultat(s)`);
-    } catch (e) {
-      console.warn("[API] indisponible :", e.message);
-      // silencieux : pas de toast pour ne pas "afficher" l'API
-    }
-  }
-
-  // 3) Fusion + rendu
-  const merged = mergeResults(localResults, apiResults);
-  renderResults(merged, t0);
+  renderResults(results, t0);
 
   btn.disabled = false;
   btn.classList.remove("loading");
   btnText.textContent = "Rechercher";
-  playSound(merged.length > 0 ? "ding" : "error");
+  playSound(results.length > 0 ? "ding" : "error");
 });
 
-let pendingFiles = [];
-
-async function renderAdminDbList() {
-  const dbs = getCachedDatabases();
-  const list = document.getElementById("adminDbList");
-  document.getElementById("adminDbCount").textContent = dbs.length;
-  if (dbs.length === 0) {
-    list.innerHTML = `<div class="admin-hint">Aucune source. Importez un fichier.</div>`;
-    return;
-  }
-  list.innerHTML = dbs.map(db => `
-    <div class="db-item">
-      <div class="db-info">
-        <div class="db-name">${escapeHtml(db.name)}</div>
-        <div class="db-meta">${db.entries.length} entrées · ${db.source || "JSON"} · ${new Date(db.ts).toLocaleDateString("fr-FR")}</div>
-      </div>
-      <div class="db-delete" data-id="${db.id}" title="Supprimer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-        </svg>
-      </div>
-    </div>
-  `).join("");
-  list.querySelectorAll(".db-delete").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = Number(btn.getAttribute("data-id"));
-      if (!confirm("Supprimer cette source ?")) return;
-      try {
-        await deleteDatabaseById(id);
-        await renderAdminDbList();
-        refreshStats();
-        toast("Source supprimée");
-      } catch (e) {
-        toast("Erreur : " + e.message, "error");
-      }
-    });
-  });
-}
-
-const HEADER_MAP = {
-  "prenom":"prenom","prénom":"prenom","first_name":"prenom","firstname":"prenom","first":"prenom","given_name":"prenom",
-  "nom":"nom_famille","nom_famille":"nom_famille","last_name":"nom_famille","lastname":"nom_famille","last":"nom_famille","surname":"nom_famille","family_name":"nom_famille",
-  "email":"email","mail":"email","e-mail":"email","courriel":"email",
-  "telephone":"telephone","téléphone":"telephone","phone":"telephone","tel":"telephone","mobile":"telephone","numero":"telephone","numéro":"telephone",
-  "ville":"ville","city":"ville","commune":"ville",
-  "code_postal":"code_postal","codepostal":"code_postal","zip":"code_postal","zipcode":"code_postal","cp":"code_postal","postal_code":"code_postal",
-  "departement":"departement","département":"departement","dept":"departement",
-  "pays":"pays","country":"pays",
-  "adresse":"adresse","address":"adresse","rue":"adresse",
-  "annee_naissance":"annee_naissance","anneenaissance":"annee_naissance","birth_year":"annee_naissance","year":"annee_naissance",
-  "date_naissance":"date_naissance","birthdate":"date_naissance","birthday":"date_naissance","dob":"date_naissance",
-  "genre":"genre","sexe":"genre","gender":"genre","sex":"genre",
-  "nom_utilisateur":"nom_utilisateur","username":"nom_utilisateur","pseudo":"nom_utilisateur","nickname":"nom_utilisateur",
-  "adresse_ip":"adresse_ip","ip":"adresse_ip","ip_address":"adresse_ip",
-  "iban":"iban","bic":"bic"
-};
-
-function normalizeKey(k) {
-  const clean = String(k).toLowerCase().trim()
-    .replace(/[éèêë]/g,"e").replace(/[àâä]/g,"a").replace(/[îï]/g,"i")
-    .replace(/[ôö]/g,"o").replace(/[ûü]/g,"u").replace(/[ç]/g,"c")
-    .replace(/[\s\-]+/g,"_").replace(/[^\w_]/g,"");
-  return HEADER_MAP[clean] || HEADER_MAP[k.toLowerCase().trim()] || clean;
-}
-function normalizeEntry(obj) {
-  const out = {};
-  Object.keys(obj).forEach(k => {
-    const nk = normalizeKey(k);
-    const v = obj[k];
-    if (v != null && v !== "" && typeof v !== "object") out[nk] = String(v);
-  });
-  return out;
-}
-function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const sep = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ";" : ",";
-  const splitLine = (line) => {
-    const out = [];
-    let cur = "", inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"("') inQ = !inQadmin;
-      else if (c ===Db sep && !inQ) { out.pushName(cur); cur = ""; }
-      else cur += c;
-    }
-    out.push(cur);
-    return out.map(s => s.replace(/^"|"$/g, "").trim());
-  };
-  const headers = splitLine(lines[0]);
-  const entries = [];
-  for (let i = 1; i < lines.length; i++) {
-    const vals = splitLine(lines[i]);
-    if (vals.length === 0 || (vals.length === 1 && !vals[0])) continue;
-    const obj = {};
-    headers.forEach((h, idx) => { if (vals[idx] !== undefined) obj[h] = vals[idx]; });
-    entries.push(normalizeEntry(obj));
-  }
-  return entries;
-}
-function parseTXT(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  const entries = [];
-  lines.forEach(line => {
-    const parts = line.split(/\s*[:|;\t]\s*/).filter(Boolean);
-    if (parts.length >= 2) {
-      const obj = {};
-      const em = line.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
-      const ph = line.match(/(?:\+?\d[\d\s.\-()]{7,})/);
-      if (em) obj.email = em[0];
-      if (ph) obj.telephone = ph[0].trim();
-      if (!obj.email && parts.length >= 2) obj.prenom = parts[0];
-      if (parts.length >= 2) obj.nom_famille = parts[1];
-      if (parts.length >= 3 && !obj.email) obj.email = parts[2];
-      if (parts.length >= 4 && !obj.telephone) obj.telephone = parts[3];
-      if (parts.length >= 5) obj.ville = parts[4];
-      if (Object.keys(obj).length > 0) entries.push(normalizeEntry(obj));
-    } else {
-      const em = line.match(/[^\s@]+@[^\s@]+\.[^\s@]+/);
-      if (em) entries.push({ email: em[0] });
-      else if (line.length < 100) entries.push({ nom_utilisateur: line.trim() });
-    }
-  });
-  return entries;
-}
-function parseNDJSON(text) {
-  const entries = [];
-  text.split(/\r?\n/).forEach(line => {
-    const t = line.trim();
-    if (!t) return;
-    try {
-      const obj = JSON.parse(t);
-      if (obj && typeof obj === "object") entries.push(normalizeEntry(obj));
-    } catch {}
-  });
-  return entries;
-}
-function parseSQL(text) {
-  const entries = [];
-  const re = /\(([^()]+)\)/g;
-  let m;
-  while ((m = re.exec(text)) !== null) {
-    const inner = m[1];
-    const vals = inner.split(",").map(v => {
-      v = v.trim();
-      if (v.startsWith("'") && v.endsWith("'")) return v.slice(1,-1);
-      if (v.startsWith('"') && v.endsWith('"')) return v.slice(1,-1);
-      return v;
-    });
-    if (vals.length < 2 || vals.length > 30) continue;
-    const obj = {};
-    const emIdx = vals.findIndex(v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
-    if (emIdx >= 0) obj.email = vals[emIdx];
-    const phIdx = vals.findIndex(v => /^\+?\d[\d\s.\-()]{6,}$/.test(v));
-    if (phIdx >= 0 && phIdx !== emIdx) obj.telephone = vals[phIdx].trim();
-    const rest = vals.filter((_, i) => i !== emIdx && i !== phIdx);
-    if (rest.length >= 1 && /^[a-zA-ZÀ-ÿ'\- ]{2,}$/.test(rest[0])) obj.prenom = rest[0];
-    if (rest.length >= 2 && /^[a-zA-ZÀ-ÿ'\- ]{2,}$/.test(rest[1])) obj.nom_famille = rest[1];
-    if (Object.keys(obj).length > 0) entries.push(normalizeEntry(obj));
-  }
-  return entries;
-}
-function parseFileContent(name, text) {
-  const ext = name.split(".").pop().toLowerCase();
-  if (ext === "json") {
-    try {
-      const data = JSON.parse(text);
-      if (Array.isArray(data)) return data.map(normalizeEntry);
-      if (data && typeof data === "object") {
-        for (const k of Object.keys(data)) if (Array.isArray(data[k])) return data[k].map(normalizeEntry);
-        return [normalizeEntry(data)];
-      }
-    } catch (e) { throw new Error("JSON invalide : " + e.message); }
-    return [];
-  }
-  if (ext === "ndjson" || ext === "jsonl") return parseNDJSON(text);
-  if (ext === "csv") return parseCSV(text);
-  if (ext === "sql") return parseSQL(text);
-  if (ext === "txt" || ext === "log") return parseTXT(text);
-  try { return parseFileContent(name.replace(/\.[^.]+$/, ".json"), text); }
-  catch { return parseTXT(text); }
-}
-
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.getElementById("fileInput");
-const fileListEl = document.getElementById("fileList");
-
-function renderFileList() {
-  if (pendingFiles.length === 0) { fileListEl.innerHTML = ""; return; }
-  fileListEl.innerHTML = pendingFiles.map((f, i) => `
-    <div class="file-item">
-      <div class="file-item-info">
-        <div class="file-item-name">${escapeHtml(f.name)}</div>
-        <div class="file-item-meta">${(f.size / 1024 / 1024).toFixed(2)} Mo · ${f.entries.length} entrées</div>
-      </div>
-      <div class="file-item-remove" data-idx="${i}" title="Retirer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </div>
-    </div>
-  `).join("");
-  fileListEl.querySelectorAll(".file-item-remove").forEach(btn => {
-    btn.addEventListener("click", () => {
-      pendingFiles.splice(Number(btn.getAttribute("data-idx")), 1);
-      renderFileList();
-    });
-  });
-}
-
-dropZone.addEventListener("click", () => fileInput.click());
-dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("dragover"); });
-dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-dropZone.addEventListener("drop", e => {
-  e.preventDefault();
-  dropZone.classList.remove("dragover");
-  handleFiles(e.dataTransfer.files);
-});
-fileInput.addEventListener("change", () => {
-  handleFiles(fileInput.files);
-  fileInput.value = "";
-});
-
-async function handleFiles(fileList) {
-  for (const file of fileList) {
-    if (file.size > MAX_FILE_SIZE) {
-      toast(`« ${file.name} » dépasse la limite de 500 Mo`, "error");
-      continue;
-    }
-    try {
-      const text = await file.text();
-      const entries = parseFileContent(file.name, text);
-      if (entries.length === 0) {
-        toast(`« ${file.name} » : aucune entrée détectée`, "error");
-        continue;
-      }
-      pendingFiles.push({ name:file.name, size:file.size, entries });
-      toast(`« ${file.name} » : ${entries.length} entrées`);
-    } catch (e) {
-      toast(`« ${file.name} » : ${e.message}`, "error");
-    }
-  }
-  renderFileList();
-}
-
-document.getElementById("adminClearFilesBtn").addEventListener("click", () => {
-  pendingFiles = [];
-  renderFileList();
-});
-document.getElementById("adminUploadBtn").addEventListener("click", async () => {
-  if (pendingFiles.length === 0) { toast("Aucun fichier à importer", "error"); return; }
-  const name = document.getElementById("adminDbName").value.trim() || "Import " + new Date().toLocaleString("fr-FR");
-  let total = 0;
-  try {
-    for (const f of pendingFiles) {
-      await addDatabase({
-        name: pendingFiles.length > 1 ? `${name} — ${f.name}` : name,
-        entries: f.entries,
-        source: "Fichier " + f.name.split(".").pop().toUpperCase(),
-        ts: Date.now()
-      });
-      total += f.entries.length;
-    }
-    pendingFiles = [];
-    renderFileList();
-    document.getElementById").value = "";
-    await renderAdminDbList();
-    refreshStats();
-    toast(`${total} entrées importées`);
-    playSound("ding");
-  } catch (e) {
-    console.error(e);
-    toast("Erreur import : " + e.message, "error", 5000);
-  }
-});
-
+/* ===== TYPEWRITER ===== */
 (function typewriter() {
   const el = document.getElementById("typewriter");
   if (!el) return;
@@ -2664,19 +1586,6 @@ document.getElementById("adminUploadBtn").addEventListener("click", async () => 
     }
   }
   setTimeout(tick, 600);
-})();
-
-(async function init() {
-  const fresh = await handleOAuthCallback();
-  if (fresh) {
-    await showMain(fresh);
-    return;
-  }
-  const stored = getStoredUser();
-  if (stored && stored.id) {
-    await showMain(stored);
-    return;
-  }
 })();
 </script>
 </body>
