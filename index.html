@@ -49,7 +49,6 @@
   }
   body.modal-open { overflow:hidden; }
 
-  /* ===== CANVAS PARTICULES ===== */
   #particleCanvas {
     position:fixed;
     inset:0;
@@ -68,7 +67,6 @@
   .toast-container { z-index:300; }
   .login-screen { z-index:1000; }
 
-  /* ===== ANIMATIONS ===== */
   @keyframes fadeInUp {
     from { opacity:0; transform:translateY(12px); }
     to { opacity:1; transform:translateY(0); }
@@ -98,7 +96,6 @@
   button { font-family:inherit; cursor:pointer; }
   input, textarea, select { font-family:inherit; }
 
-  /* ===== LOGIN ===== */
   .login-screen {
     position:fixed; inset:0;
     background:rgba(0,0,0,0.85);
@@ -160,7 +157,6 @@
     line-height:1.6;
   }
 
-  /* ===== NAV ===== */
   nav.topbar {
     position:fixed; top:0; left:0; right:0;
     z-index:100;
@@ -239,7 +235,6 @@
     max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
 
-  /* ===== MAIN ===== */
   main { position:relative; }
   .container { max-width:920px; margin:0 auto; padding:0 24px; }
 
@@ -304,7 +299,6 @@
     animation:fadeInUp 0.6s ease-out 0.15s backwards;
   }
 
-  /* ===== INPUT AVEC LOUPE VISIBLE ===== */
   .input-wrap {
     position:relative;
     margin-bottom:10px;
@@ -352,9 +346,7 @@
     border-color:var(--accent-border);
     box-shadow:0 0 0 3px rgba(0,196,106,0.08);
   }
-  input#target:focus + .input-type-badge ~ * {} /* noop */
 
-  /* Focus : la loupe devient verte */
   .input-wrap:focus-within .input-icon circle,
   .input-wrap:focus-within .input-icon line {
     stroke:var(--accent);
@@ -1126,7 +1118,6 @@
 
 <canvas id="particleCanvas"></canvas>
 
-<!-- ===== ÉCRAN DE CONNEXION ===== -->
 <div class="login-screen" id="loginScreen">
   <div class="login-card">
     <div class="login-brand">
@@ -1149,7 +1140,6 @@
   </div>
 </div>
 
-<!-- ===== NAV ===== -->
 <nav class="topbar" id="topbar" style="display:none;">
   <div class="brand" id="brandLogo">
     <div class="brand-mark">S</div>
@@ -1345,7 +1335,6 @@
 
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- MODAL SETTINGS -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal">
     <button class="modal-close" data-close="settingsModal" type="button">
@@ -1364,7 +1353,6 @@
   </div>
 </div>
 
-<!-- MODAL MENTIONS LÉGALES -->
 <div class="modal-overlay" id="mentionsModal">
   <div class="modal">
     <button class="modal-close" data-close="mentionsModal" type="button">
@@ -1398,7 +1386,6 @@
   </div>
 </div>
 
-<!-- MODAL ABOUT -->
 <div class="modal-overlay" id="aboutModal">
   <div class="modal">
     <button class="modal-close" data-close="aboutModal" type="button">
@@ -1426,7 +1413,6 @@
   </div>
 </div>
 
-<!-- MODAL ADMIN -->
 <div class="modal-overlay" id="adminModal">
   <div class="modal wide">
     <button class="modal-close" data-close="adminModal" type="button">
@@ -1479,6 +1465,11 @@
   </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- CLIENT DE DONNÉES EXTERNE (search.js à la racine)            -->
+<!-- ============================================================ -->
+<script src="search.js"></script>
+
 <script>
 /* ============================================================
    CONFIGURATION
@@ -1500,6 +1491,14 @@ const IDB_STORE = "databases";
 const MAX_FILE_SIZE = 500 * 1024 * 1024;
 
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+/* ===== FALLBACK si search.js absent ===== */
+if (typeof window.dataClient === "undefined") {
+  console.warn("[Seek It] search.js introuvable — recherche locale uniquement");
+  window.dataClient = {
+    query: async () => { throw new Error("dataClient indisponible"); }
+  };
+}
 
 /* ===== PARTICULES ===== */
 (function fallingParticles() {
@@ -2063,6 +2062,41 @@ function searchInDatabases(query, filters) {
   });
 }
 
+/* ===== FUSION LOCALE + API ===== */
+function mergeResults(local, api) {
+  const seen = new Set();
+  const key = r => {
+    const em = normalize(r.email);
+    if (em) return "e:" + em;
+    const tel = normalize(r.telephone || r.phone).replace(/\D/g, "");
+    if (tel) return "t:" + tel;
+    const nom = normalize(`${r.prenom || ""}|${r.nom_famille || r.nom || ""}`);
+    if (nom !== "|") return "n:" + nom;
+    return null;
+  };
+  const out = [];
+  for (const item of [...local, ...api]) {
+    const k = key(item);
+    if (k && seen.has(k)) continue;
+    if (k) seen.add(k);
+    out.push(item);
+  }
+  return out;
+}
+
+/* ===== APPEL API (via proxy /api/search) ===== */
+async function searchViaAPI(query, filters) {
+  const payload = { query, filters };
+  const data = await window.dataClient.query(payload);
+
+  // Adapte selon le format réel de BrixHub
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.results)) return data.results;
+  if (data && Array.isArray(data.data)) return data.data;
+  if (data && Array.isArray(data.items)) return data.items;
+  return [];
+}
+
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -2261,7 +2295,8 @@ inputClear.addEventListener("click", () => {
 });
 input.addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("go").click(); });
 
-document.getElementById("go").addEventListener("click", () => {
+/* ===== RECHERCHE : LOCALE + API EN PARALLÈLE ===== */
+document.getElementById("go").addEventListener("click", async () => {
   const query = input.value.trim();
   const filters = readFilters();
   if (query.length < 2 && Object.keys(filters).length === 0) {
@@ -2276,15 +2311,35 @@ document.getElementById("go").addEventListener("click", () => {
   btnText.textContent = "Recherche";
 
   const t0 = performance.now();
-  setTimeout(() => {
-    const results = searchInDatabases(query, filters);
-    renderResults(results, t0);
-    btn.disabled = false;
-    btn.classList.remove("loading");
-    btnText.textContent = "Rechercher";
-    if (results.length > 0) playSound("ding");
-    else playSound("error");
-  }, 60);
+
+  // 1) Résultats locaux (rapide, synchrone)
+  let localResults = [];
+  try {
+    localResults = searchInDatabases(query, filters);
+  } catch (e) {
+    console.error("[local]", e);
+  }
+
+  // 2) Résultats API (asynchrone, en parallèle)
+  let apiResults = [];
+  if (query.length >= 2) {
+    try {
+      apiResults = await searchViaAPI(query, filters);
+      console.log(`[API] ${apiResults.length} résultat(s)`);
+    } catch (e) {
+      console.warn("[API] indisponible :", e.message);
+      // silencieux : pas de toast pour ne pas "afficher" l'API
+    }
+  }
+
+  // 3) Fusion + rendu
+  const merged = mergeResults(localResults, apiResults);
+  renderResults(merged, t0);
+
+  btn.disabled = false;
+  btn.classList.remove("loading");
+  btnText.textContent = "Rechercher";
+  playSound(merged.length > 0 ? "ding" : "error");
 });
 
 let pendingFiles = [];
@@ -2370,8 +2425,8 @@ function parseCSV(text) {
     let cur = "", inQ = false;
     for (let i = 0; i < line.length; i++) {
       const c = line[i];
-      if (c === '"') inQ = !inQ;
-      else if (c === sep && !inQ) { out.push(cur); cur = ""; }
+      if (c === '"("') inQ = !inQadmin;
+      else if (c ===Db sep && !inQ) { out.pushName(cur); cur = ""; }
       else cur += c;
     }
     out.push(cur);
@@ -2554,7 +2609,7 @@ document.getElementById("adminUploadBtn").addEventListener("click", async () => 
     }
     pendingFiles = [];
     renderFileList();
-    document.getElementById("adminDbName").value = "";
+    document.getElementById").value = "";
     await renderAdminDbList();
     refreshStats();
     toast(`${total} entrées importées`);
